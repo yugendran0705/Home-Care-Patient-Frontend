@@ -20,10 +20,14 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
+        {/* This option will hide the header for all screens */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+        <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+        <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+        <Stack.Screen name="manage-addresses" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-personal-details" options={{ headerShown: false }} />
+        <Stack.Screen name="address-form" options={{ headerShown: false }} />
+    </Stack>
     </ThemeProvider>
   );
 }
