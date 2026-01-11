@@ -19,6 +19,7 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import data from '@/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialFormData = {
   email: '',
@@ -121,9 +122,14 @@ const SignUpScreen = () => {
     setError('');
     setLoading(true);
     try {
-      await axios.post(`${data.apiUrl}/patients/`, formData);
+      const response = await axios.post(`${data.apiUrl}/patients/`, formData);
+      const { access_token, refresh_token } = response.data;
+      // Securely store the tokens
+      await AsyncStorage.setItem('access_token', JSON.stringify({access_token}));
+      await AsyncStorage.setItem('refresh_token', JSON.stringify({refresh_token}));
+
       Alert.alert('Success!', 'Your account has been created. Please sign in.', [
-        { text: 'OK', onPress: () => router.replace('/sign-in') },
+        { text: 'OK', onPress: () => router.push('/(tabs)/profile') },
       ]);
     } catch (e: any) {
       const errorMessage = e.response ? e.response.data.message : 'Registration failed. Please try again.';

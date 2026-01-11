@@ -46,7 +46,7 @@ const AddressFormScreen = () => {
                 try {
                     const response = await axiosInstance.get(`/addresses/one/${addressId}`);
                     setAddress(response.data);
-                } catch (error) {
+                } catch {
                     Alert.alert('Error', 'Could not fetch address details.');
                     router.back();
                 } finally {
@@ -96,7 +96,7 @@ const AddressFormScreen = () => {
                 }));
             }
             setStep(2); // Move to the form step
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Could not determine address from location. Please enter it manually.');
             setStep(2); // Still move to form so user can enter manually
         } finally {
