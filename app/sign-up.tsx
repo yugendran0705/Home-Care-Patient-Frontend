@@ -103,7 +103,7 @@ const SignUpScreen = () => {
   const handleNextStep = () => {
     if (step === 1) {
       if (!formData.email || !formData.password || !formData.first_name || !formData.last_name) {
-        setError('Please fill all required fields in Step 1.');
+        setError('Please fill all required fields.');
         return;
       }
     }
