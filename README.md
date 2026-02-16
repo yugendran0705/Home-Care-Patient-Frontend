@@ -14,7 +14,7 @@ This is a React Native mobile application for patients using the Home Care servi
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yugendran0705/Home-Care-Patient-Frontend.git
    ```
 2. Navigate to the project directory:
    ```bash
