@@ -1,50 +1,86 @@
-# Welcome to your Expo app 👋
+# Home Care Patient App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a React Native mobile application for patients using the Home Care service. It allows patients to manage their profiles, addresses, and more.
 
-## Get started
+## Getting Started
 
-1. Install dependencies
+### Prerequisites
 
+- Node.js
+- npm or yarn
+- Expo CLI
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd Home-Care-Patient-Frontend
+   ```
+3. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
+### Running the application
 
-   ```bash
-   npx expo start
-   ```
+- To start the development server:
+  ```bash
+  npm start
+  ```
+  or
+  ```bash
+  expo start
+  ```
+- To run on Android:
+  ```bash
+  npm run android
+  ```
+- To run on iOS:
+  ```bash
+  npm run ios
+  ```
+- To run on web:
+  ```bash
+  npm run web
+  ```
 
-In the output, you'll find options to open the app in a
+## Folder Structure
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- `app/`: Contains the screens and navigation logic of the application, using Expo Router.
+- `assets/`: Contains static assets like images and fonts.
+- `components/`: Contains reusable React components.
+- `constants/`: Contains constants like colors and styles.
+- `hooks/`: Contains custom React hooks.
+- `node_modules/`: Contains all the installed dependencies.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Contributing
 
-## Get a fresh project
+When working on a ticket, please follow this branching strategy.
 
-When you're ready, run:
+### Branching Strategy
 
-```bash
-npm run reset-project
-```
+Create a new branch from `main` for each ticket. The branch name should be in the following format:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+`{Type of ticket}/{Ticket number}-{Small_description_with_underscores}`
 
-## Learn more
+**Types of tickets:**
 
-To learn more about developing your project with Expo, look at the following resources:
+- `feature`: For new features.
+- `bugfix`: For bug fixes.
+- `chore`: for routine tasks, maintenance, or refactoring.
+- and more as needed.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+**Example:**
 
-## Join the community
+`feature/123-add_new_profile_screen`
+`bugfix/456-fix_login_issue`
+`chore/789-update_dependencies`
 
-Join our community of developers creating universal apps.
+### Commit Messages
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Please write clear and concise commit messages.
+
