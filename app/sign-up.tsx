@@ -75,6 +75,7 @@ const SignUpScreen = () => {
     };
     if (step === 2) {
       getLocation();
+      setLoading(false) // Fixed the issue of submit button of step 3 set to load state even when navigating b/w previous pages
     }
   }, [step]);
 
@@ -100,10 +101,28 @@ const SignUpScreen = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
+  };
+
   const handleNextStep = () => {
     if (step === 1) {
-      if (!formData.email || !formData.password || !formData.first_name || !formData.last_name) {
+      if (!formData.email || !formData.password || !formData.first_name || !formData.last_name || !formData.date_of_birth || !formData.phone_number || !formData.gender) {
         setError('Please fill all required fields.');
+        return;
+      }
+      if (!validateEmail(formData.email)) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+      if (!validatePassword(formData.password)) {
+        setError(
+          "Password must be at least 8 characters, include at least one letter, one number, and one special character.",
+        );
         return;
       }
     }
@@ -141,12 +160,14 @@ const SignUpScreen = () => {
   };
 
   const handleConfirmLocation = async () => {
-      setIsGeocoding(true);
-      try {
-          const geocoded = await Location.reverseGeocodeAsync({
-              latitude: formData.address.latitude,
-              longitude: formData.address.longitude,
-          });
+    if (isGeocoding) return;
+    setIsGeocoding(true);
+    setError("");
+    try {
+      const geocoded = await Location.reverseGeocodeAsync({
+        latitude: formData.address.latitude,
+        longitude: formData.address.longitude,
+      });
 
           if (geocoded.length > 0) {
               const geo = geocoded[0];
@@ -173,17 +194,17 @@ const SignUpScreen = () => {
 
   const renderStepOne = () => (
     <>
-      <Text style={styles.stepTitle}>Step 1: Personal Details</Text>
-      <TextInput style={styles.input} placeholder="First Name" value={formData.first_name} onChangeText={v => handleFormChange('first_name', v)} />
-      <TextInput style={styles.input} placeholder="Last Name" value={formData.last_name} onChangeText={v => handleFormChange('last_name', v)} />
-      <TextInput style={styles.input} placeholder="Email Address" value={formData.email} onChangeText={v => handleFormChange('email', v)} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" value={formData.password} onChangeText={v => handleFormChange('password', v)} secureTextEntry />
-      <TextInput style={styles.input} placeholder="Phone Number" value={formData.phone_number} onChangeText={v => handleFormChange('phone_number', v)} keyboardType="phone-pad" />
-      
+      <Text className="text-[22px] font-semibold text-white/90 mb-5 text-center">Step 1: Personal Details</Text>
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="First Name" value={formData.first_name} onChangeText={v => handleFormChange('first_name', v)} />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Last Name" value={formData.last_name} onChangeText={v => handleFormChange('last_name', v)} />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Email Address" value={formData.email} onChangeText={v => handleFormChange('email', v)} keyboardType="email-address" autoCapitalize="none" />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Password" value={formData.password} onChangeText={v => handleFormChange('password', v)} secureTextEntry />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Phone Number" value={formData.phone_number} onChangeText={v => handleFormChange('phone_number', v)} keyboardType="phone-pad" />
+
       {/* Date of Birth Picker */}
       <Pressable onPress={() => setShowDatePicker(true)}>
-        <View style={styles.input}>
-          <Text style={formData.date_of_birth ? styles.dateText : styles.placeholderText}>
+        <View className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center">
+          <Text className={formData.date_of_birth ? "text-[16px] text-white" : "text-[16px] text-[#a0aec0]"}>
             {formData.date_of_birth || 'Date of Birth'}
           </Text>
         </View>
@@ -198,20 +219,20 @@ const SignUpScreen = () => {
         />
       )}
 
-      <View style={styles.genderContainer}>
-        <Pressable 
-            style={[styles.genderButton, formData.gender === 'Male' && styles.genderButtonSelected]} 
-            onPress={() => handleFormChange('gender', 'Male')}
+      <View className="flex-row justify-between mb-[15px]">
+        <Pressable
+          className={`flex-1 flex-row items-center justify-center h-[55px] bg-white/20 rounded-[14px] mx-[5px] ${formData.gender === 'Male' ? 'bg-white' : ''}`}
+          onPress={() => handleFormChange('gender', 'Male')}
         >
-            <Feather name="user" size={20} color={formData.gender === 'Male' ? '#192f6a' : '#fff'} style={styles.genderIcon} />
-            <Text style={[styles.genderButtonText, formData.gender === 'Male' && styles.genderButtonTextSelected]}>Male</Text>
+          <Feather name="user" size={20} color={formData.gender === 'Male' ? '#192f6a' : '#fff'} className="mr-[10px]" />
+          <Text className={`text-[16px] text-white font-medium ${formData.gender === 'Male' ? 'text-[#192f6a]' : ''}`}>Male</Text>
         </Pressable>
-        <Pressable 
-            style={[styles.genderButton, formData.gender === 'Female' && styles.genderButtonSelected]} 
-            onPress={() => handleFormChange('gender', 'Female')}
+        <Pressable
+          className={`flex-1 flex-row items-center justify-center h-[55px] bg-white/20 rounded-[14px] mx-[5px] ${formData.gender === 'Female' ? 'bg-white' : ''}`}
+          onPress={() => handleFormChange('gender', 'Female')}
         >
-            <Feather name="user" size={20} color={formData.gender === 'Female' ? '#192f6a' : '#fff'} style={styles.genderIcon} />
-            <Text style={[styles.genderButtonText, formData.gender === 'Female' && styles.genderButtonTextSelected]}>Female</Text>
+          <Feather name="user" size={20} color={formData.gender === 'Female' ? '#192f6a' : '#fff'} className="mr-[10px]" />
+          <Text className={`text-[16px] text-white font-medium ${formData.gender === 'Female' ? 'text-[#192f6a]' : ''}`}>Female</Text>
         </Pressable>
       </View>
     </>
@@ -219,80 +240,80 @@ const SignUpScreen = () => {
 
   const renderStepThree = () => (
     <>
-      <Text style={styles.stepTitle}>Step 3: Address</Text>
-      <TextInput style={styles.input} placeholder="Address Line 1" value={formData.address.address_line_1} onChangeText={v => handleAddressChange('address_line_1', v)} />
-      <TextInput style={styles.input} placeholder="Address Line 2 (Optional)" value={formData.address.address_line_2} onChangeText={v => handleAddressChange('address_line_2', v)} />
-      <TextInput style={styles.input} placeholder="City" value={formData.address.city} onChangeText={v => handleAddressChange('city', v)} />
-      <TextInput style={styles.input} placeholder="State" value={formData.address.state} onChangeText={v => handleAddressChange('state', v)} />
-      <TextInput style={styles.input} placeholder="Pincode" value={formData.address.pincode} onChangeText={v => handleAddressChange('pincode', v)} keyboardType="number-pad" />
-      <TextInput style={styles.input} placeholder="Country" value={formData.address.country} onChangeText={v => handleAddressChange('country', v)} />
+      <Text className="text-[22px] font-semibold text-white/90 mb-5 text-center">Step 3: Address</Text>
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Address Line 1" value={formData.address.address_line_1} onChangeText={v => handleAddressChange('address_line_1', v)} />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Address Line 2 (Optional)" value={formData.address.address_line_2} onChangeText={v => handleAddressChange('address_line_2', v)} />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="City" value={formData.address.city} onChangeText={v => handleAddressChange('city', v)} />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="State" value={formData.address.state} onChangeText={v => handleAddressChange('state', v)} />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Pincode" value={formData.address.pincode} onChangeText={v => handleAddressChange('pincode', v)} keyboardType="number-pad" />
+      <TextInput className="h-[55px] bg-white/20 rounded-[14px] px-[15px] text-[16px] text-white mb-[15px] justify-center" placeholder="Country" value={formData.address.country} onChangeText={v => handleAddressChange('country', v)} />
     </>
   );
 
   const renderStepTwo = () => (
     <>
-      <Text style={styles.stepTitle}>Step 2: Pin Your Location</Text>
-      <Text style={styles.mapSubtitle}>Drag the pin to your exact address</Text>
+      <Text className="text-[22px] font-semibold text-white/90 mb-5 text-center">Step 2: Pin Your Location</Text>
+      <Text className="text-[14px] text-white/70 text-center mb-[15px]">Drag the pin to your exact address</Text>
       {loading && !location ? <ActivityIndicator size="large" color="#fff" /> :
-      <View style={{ flex: 1 }}>
-            <MapView
-                style={styles.map}
-                region={{
-                    latitude: Number(formData.address.latitude),
-                    longitude: Number(formData.address.longitude),
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                }}
-                onPress={(e) => {
-                  // let user drop pin by tapping the map
-                  handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
-                  handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
-                }}
-            >
-                <Marker
-                    draggable
-                    coordinate={{ latitude: Number(formData.address.latitude), longitude: Number(formData.address.longitude) }}
-                    onDragEnd={(e) => {
-                        handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
-                        handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
-                    }}
-                />
-            </MapView>
-            <Pressable style={styles.confirmButton} onPress={handleConfirmLocation} disabled={isGeocoding}>
-                {isGeocoding ? <ActivityIndicator color="#192f6a" /> : <Text style={styles.confirmButtonText}>Confirm Location</Text>}
-            </Pressable>
+        <View className="flex-1">
+          <MapView
+            style={StyleSheet.absoluteFillObject}
+            region={{
+              latitude: Number(formData.address.latitude),
+              longitude: Number(formData.address.longitude),
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+            onPress={(e) => {
+              // let user drop pin by tapping the map
+              handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
+              handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
+            }}
+          >
+            <Marker
+              draggable
+              coordinate={{ latitude: Number(formData.address.latitude), longitude: Number(formData.address.longitude) }}
+              onDragEnd={(e) => {
+                handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
+                handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
+              }}
+            />
+          </MapView>
+          <Pressable className="bg-white py-[15px] rounded-[14px] items-center mt-5" onPress={handleConfirmLocation} disabled={isGeocoding}>
+            {isGeocoding ? <ActivityIndicator color="#192f6a" /> : <Text className="text-[#192f6a] text-[18px] font-bold">Confirm Location</Text>}
+          </Pressable>
         </View>
       }
     </>
   );
 
   return (
-    <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.gradientBackground}>
+    <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} className="flex-1">
       <SafeAreaProvider>
-        <SafeAreaView style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-            <View style={styles.header}>
-                <Pressable onPress={() => step > 1 ? setStep(s => s - 1) : router.back()} style={styles.backButton}>
-                    <Feather name="arrow-left" size={24} color="#fff" />
-                </Pressable>
-                <Text style={styles.title}>Create Account</Text>
-                <View style={{ width: 40 }} />
+        <SafeAreaView className="flex-1">
+          <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+            <View className={`flex-row items-center justify-between mb-5 ${Platform.OS === 'android' ? 'mt-5' : 'mt-0'}`}>
+              <Pressable onPress={() => step > 1 ? setStep(s => s - 1) : router.back()} className="p-[10px]">
+                <Feather name="arrow-left" size={24} color="#fff" />
+              </Pressable>
+              <Text className="text-[28px] font-bold text-white text-center">Create Account</Text>
+              <View className="w-[40px]" />
             </View>
 
             {step === 1 && renderStepOne()}
             {step === 2 && renderStepTwo()}
             {step === 3 && renderStepThree()}
 
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {error ? <Text className="text-[#ffcdd2] text-center my-[10px] text-[14px]">{error}</Text> : null}
 
-            <View style={styles.buttonContainer}>
+            <View className="mt-5">
               {step < 3 ? (
-                <Pressable style={styles.actionButton} onPress={handleNextStep}>
-                  <Text style={styles.actionButtonText}>Next</Text>
+                <Pressable className="bg-white py-[18px] rounded-[14px] items-center shadow-lg elevation-5" onPress={handleNextStep}>
+                  <Text className="text-[#192f6a] text-[18px] font-bold">Next</Text>
                 </Pressable>
               ) : (
-                <Pressable style={styles.actionButton} onPress={handleSignUp} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#192f6a" /> : <Text style={styles.actionButtonText}>Sign Up</Text>}
+                <Pressable className="bg-white py-[18px] rounded-[14px] items-center shadow-lg elevation-5" onPress={handleSignUp} disabled={loading}>
+                  {loading ? <ActivityIndicator color="#192f6a" /> : <Text className="text-[#192f6a] text-[18px] font-bold">Sign Up</Text>}
                 </Pressable>
               )}
             </View>
@@ -302,149 +323,5 @@ const SignUpScreen = () => {
     </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  gradientBackground: { flex: 1 },
-  safeArea: { flex: 1 },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: Platform.OS === 'android' ? 20 : 0,
-    marginBottom: 20,
-  },
-  backButton: {
-    padding: 10,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-  },
-  stepTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  mapSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  input: {
-    height: 55,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 14,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    color: '#fff',
-    marginBottom: 15,
-    justifyContent: 'center',
-  },
-  placeholderText: {
-    fontSize: 16,
-    color: '#a0aec0', // Using a placeholder color
-  },
-  dateText: {
-    fontSize: 16,
-    color: '#fff',
-  },
-  mapContainer: {
-    height: 300,
-    borderRadius: 14,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  errorText: {
-    color: '#ffcdd2',
-    textAlign: 'center',
-    marginVertical: 10,
-    fontSize: 14,
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
-  actionButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 18,
-    borderRadius: 14,
-    alignItems: 'center',
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 3.84 },
-      android: { elevation: 5 },
-      web: { boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }
-    }),
-  },
-  actionButtonText: {
-    color: '#192f6a',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-  },
-  genderButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 55,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 14,
-    marginHorizontal: 5,
-  },
-  genderButtonSelected: {
-    backgroundColor: '#fff',
-  },
-  genderIcon: {
-    marginRight: 10,
-  },
-  genderButtonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '500',
-  },
-  genderButtonTextSelected: {
-    color: '#192f6a',
-  },
-  confirmButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 15,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  confirmButtonText: {
-    color: '#192f6a',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  saveButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 15,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  saveButtonText: {
-    color: '#192f6a',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
 
 export default SignUpScreen;
