@@ -1,5 +1,5 @@
 import { Link, router } from 'expo-router'; // Using Link for navigation with Expo Router
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -31,6 +31,12 @@ import logoImage from '../assets/images/HC_logo.png';
 import { EyeIcon, EyeOffIcon } from '@/components/ui/icon';
 import { useFonts } from 'expo-font';
 import { VStack } from '@/components/ui/vstack';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
 
 const SignInScreen = () => {
   // State for the input fields
@@ -40,11 +46,53 @@ const SignInScreen = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
+
+  // Animation values
+  const headerOpacity = useSharedValue(0);
+  const headerTranslateY = useSharedValue(50);
+  const formOpacity = useSharedValue(0);
+  const formTranslateY = useSharedValue(50);
+  const footerOpacity = useSharedValue(0);
+  const footerTranslateY = useSharedValue(0);
+
+  useEffect(() => {
+    headerOpacity.value = withTiming(1, { duration: 600 });
+    headerTranslateY.value = withTiming(0, { duration: 600 });
+
+    formOpacity.value = withDelay(200, withTiming(1, { duration: 600 }));
+    formTranslateY.value = withDelay(200, withTiming(0, { duration: 600 }));
+
+    footerOpacity.value = withDelay(600, withTiming(1, { duration: 600 }));
+    footerTranslateY.value = withDelay(600, withTiming(0, { duration: 600 }));
+  }, [
+    footerOpacity,
+    footerTranslateY,
+    formOpacity,
+    formTranslateY,
+    headerOpacity,
+    headerTranslateY,
+  ]);
+
   const handleState = () => {
     setShowPassword((showState) => {
       return !showState;
     });
   };
+
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+    transform: [{ translateY: headerTranslateY.value }],
+  }));
+
+  const formAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: formOpacity.value,
+    transform: [{ translateY: formTranslateY.value }],
+  }));
+
+  const footerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: footerOpacity.value,
+    transform: [{ translateY: footerTranslateY.value }],
+  }));
 
   const handleSignIn = async () => {
     // Prevent multiple presses while loading
@@ -113,118 +161,128 @@ const SignInScreen = () => {
           >
             <VStack className='items-center flex-1 mx-5'>
               {/* Top Section / Logo */}
-              <Box className='justify-center items-center py-20'>
-                <Box className="w-24 h-24 mb-4">
-                  <Image
-                    source={logoImage}
-                    className="w-full h-full"
-                    alt="HomeCare Logo"
-                    resizeMode="contain"
-                  />
+              <Animated.View
+                className="items-center"
+                style={headerAnimatedStyle}
+              >
+                <Box className='justify-center items-center py-20'>
+                  <Box className="w-24 h-24 mb-4">
+                    <Image
+                      source={logoImage}
+                      className="w-full h-full"
+                      alt="HomeCare Logo"
+                      resizeMode="contain"
+                    />
+                  </Box>
+                  <Text
+                    className='text-5xl font-bold text-white text-center'
+                    style={{ fontFamily: Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif-condensed' }}
+                  >
+                    HomeCare
+                  </Text>
+                  <Text style={{ fontFamily: "Sen-Regular" }}
+                    className="text-[18px] text-white/70 mt-[20px] mb-[20px] w-full text-center"
+                  >
+                    Welcome back, please sign in
+                  </Text>
                 </Box>
-                <Text
-                  className='text-5xl font-bold text-white text-center'
-                  style={{ fontFamily: Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif-condensed' }}
-                >
-                  HomeCare
-                </Text>
-                <Text style={{ fontFamily: "Sen-Regular" }}
-                  className="text-[18px] text-white/70 mt-[20px] mb-[20px] w-full text-center"
-                >
-                  Welcome back, please sign in
-                </Text>
-              </Box>
-
+              </Animated.View>
               {/* Form Section */}
+
               <VStack space="lg" className="bg-white w-full mt-5 px-8 py-10 rounded-3xl items-center">
                 <FormControl size="lg" className="w-full text-red-500" isInvalid={!!error} isRequired>
+                  <Animated.View
+                    className="w-full mb-[16px]"
+                    style={formAnimatedStyle}
+                  >
+                    {/* Email Field */}
+                    <FormControlLabel>
+                      <FormControlLabelText
+                        style={{ fontFamily: "Sen-Regular" }}
+                        className="text-gray-800 uppercase leading-10"
+                      >
+                        Email Address
+                      </FormControlLabelText>
+                    </FormControlLabel>
+                    <Input className="my-1 rounded-xl h-14 bg-[#F0F5FA] pl-4 border-0" size="md">
+                      <InputSlot>
+                        <InputIcon as={MailIcon} />
+                      </InputSlot>
+                      <InputField
+                        type="text"
+                        placeholder="example@gmail.com"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        className='text-gray-800'
+                      />
+                    </Input>
 
-                  {/* Email Field */}
-                  <FormControlLabel>
-                    <FormControlLabelText
-                      style={{ fontFamily: "Sen-Regular" }}
-                      className="text-gray-800 uppercase leading-10"
-                    >
-                      Email Address
-                    </FormControlLabelText>
-                  </FormControlLabel>
-                  <Input className="my-1 rounded-xl h-14 bg-[#F0F5FA] pl-4 border-0" size="md">
-                    <InputSlot>
-                      <InputIcon as={MailIcon} />
-                    </InputSlot>
-                    <InputField
-                      type="text"
-                      placeholder="example@gmail.com"
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      className='text-gray-800'
-                    />
-                  </Input>
-
-                  {/* Password Input Field */}
-                  <FormControlLabel>
+                    {/* Password Input Field */}
+                    <FormControlLabel>
                       <FormControlLabelText
                         style={{ fontFamily: "Sen-Regular" }}
                         className="text-gray-800 uppercase leading-10"
                       >
                         Password
                       </FormControlLabelText>
-                  </FormControlLabel>
+                    </FormControlLabel>
                     <Input
                       className="my-1 rounded-xl h-14 bg-[#F0F5FA] pl-4 pr-4 border-0"
                       size="md"
                     >
-                    <InputSlot>
-                      <InputIcon as={LockIcon} />
-                    </InputSlot>
-                    <InputField
-                      style={{ fontFamily: "Sen-Regular" }}
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="********"
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!showPassword}
-                      className='text-gray-800'
-                    />
-                    <InputSlot onPress={handleState}>
-                      <InputIcon as={showPassword ? EyeIcon : EyeOffIcon} />
-                    </InputSlot>
-                  </Input>
+                      <InputSlot>
+                        <InputIcon as={LockIcon} />
+                      </InputSlot>
+                      <InputField
+                        style={{ fontFamily: "Sen-Regular" }}
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="********"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        className='text-gray-800'
+                      />
+                      <InputSlot onPress={handleState}>
+                        <InputIcon as={showPassword ? EyeIcon : EyeOffIcon} />
+                      </InputSlot>
+                    </Input>
 
-                  {/* Error Message */}
-                  <FormControlError className="mt-2">
-                    <FormControlErrorIcon as={AlertCircleIcon} />
-                    <FormControlErrorText>{error}</FormControlErrorText>
-                  </FormControlError>
+                    {/* Error Message */}
+                    <FormControlError className="mt-2">
+                      <FormControlErrorIcon as={AlertCircleIcon} />
+                      <FormControlErrorText>{error}</FormControlErrorText>
+                    </FormControlError>
 
-                  {/* Submit Button */}
-                  <Button
-                    className="w-full bg-[#369BFF] rounded-xl h-14 mt-8"
-                    onPress={handleSignIn}
-                    isDisabled={loading}
-                  >
-                    {loading ? (
-                      <ButtonSpinner color="white" />
-                    ) : (
-                      <ButtonText 
-                      style={{ fontFamily: "Sen-Bold" }}
-                      className="text-white text-xl"
-                      >Sign In</ButtonText>
-                    )}
-                  </Button>
+                    {/* Submit Button */}
+                    <Button
+                      className="w-full bg-[#369BFF] rounded-xl h-14 mt-8"
+                      onPress={handleSignIn}
+                      isDisabled={loading}
+                    >
+                      {loading ? (
+                        <ButtonSpinner color="white" />
+                      ) : (
+                        <ButtonText
+                          style={{ fontFamily: "Sen-Bold" }}
+                          className="text-white text-xl"
+                        >Sign In</ButtonText>
+                      )}
+                    </Button>
 
-                  {/* Sign Up Link */}
-                  <Box className='flex-row justify-center mt-8'>
-                    <Text style={{ fontFamily: "Sen-Regular" }} className='text-black'>Don&apos;t have an account? </Text>
-                    <Link href="/sign-up" asChild>
-                      <Pressable>
-                        <Text style={{ fontFamily: "Sen-Bold" }} className='text-[#369BFF]'>Sign Up</Text>
-                      </Pressable>
-                    </Link>
-                  </Box>
-
+                    {/* Sign Up Link */}
+                                      <Animated.View style={footerAnimatedStyle}>
+                    <Box className='flex-row justify-center mt-8'>
+                      <Text style={{ fontFamily: "Sen-Regular" }} className='text-black'>Don&apos;t have an account? </Text>
+                      <Link href="/sign-up" asChild>
+                        <Pressable>
+                          <Text style={{ fontFamily: "Sen-Bold" }} className='text-[#369BFF]'>Sign Up</Text>
+                        </Pressable>
+                      </Link>
+                    </Box>
+                    </Animated.View>
+                  </Animated.View>
                 </FormControl>
               </VStack>
             </VStack>
