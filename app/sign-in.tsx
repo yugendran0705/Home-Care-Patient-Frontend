@@ -1,4 +1,6 @@
 import { Link, router } from 'expo-router'; // Using Link for navigation with Expo Router
+import { useColorScheme } from 'react-native';
+import { Colors } from '../constants/Colors';
 import React, { useEffect, useState } from 'react';
 import {
   Platform,
@@ -29,7 +31,6 @@ import {
 import { AlertCircleIcon, LockIcon, MailIcon } from '@/components/ui/icon';
 import logoImage from '../assets/images/HC_logo.png';
 import { EyeIcon, EyeOffIcon } from '@/components/ui/icon';
-import { useFonts } from 'expo-font';
 import { VStack } from '@/components/ui/vstack';
 import Animated, {
   useAnimatedStyle,
@@ -39,6 +40,9 @@ import Animated, {
 } from "react-native-reanimated";
 
 const SignInScreen = () => {
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
+
   // State for the input fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -135,16 +139,10 @@ const SignInScreen = () => {
     }
   };
 
-  const [fontsLoaded] = useFonts({
-    'Sen-Regular': require('../assets/fonts/Sen-Regular.ttf'),
-    'Sen-Bold': require('../assets/fonts/Sen-Bold.ttf'),
-  });
-
-  if (!fontsLoaded) return null;
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className='flex-1 bg-[#369BFF]/80'>
+      <SafeAreaView className='flex-1' style={{ backgroundColor: colors.primaryBackground}}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         // keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
@@ -189,8 +187,8 @@ const SignInScreen = () => {
               </Animated.View>
               {/* Form Section */}
 
-              <VStack space="lg" className="bg-white w-full mt-5 px-8 py-10 rounded-3xl items-center">
-                <FormControl size="lg" className="w-full text-red-500" isInvalid={!!error} isRequired>
+              <VStack space="lg" style={{ backgroundColor: colors.surfaceSecondary }} className="w-full mt-5 px-8 py-10 rounded-3xl items-center">
+                <FormControl size="lg" className="w-full text-red-500" isInvalid={!!error}  >
                   <Animated.View
                     className="w-full mb-[16px]"
                     style={formAnimatedStyle}
@@ -198,15 +196,14 @@ const SignInScreen = () => {
                     {/* Email Field */}
                     <FormControlLabel>
                       <FormControlLabelText
-                        style={{ fontFamily: "Sen-Regular" }}
-                        className="text-gray-800 uppercase leading-10"
+                        style={{ fontFamily: "Sen-Regular", color: colors.text }} className=" uppercase leading-10"
                       >
                         Email Address
                       </FormControlLabelText>
                     </FormControlLabel>
-                    <Input className="my-1 rounded-xl h-14 bg-[#F0F5FA] pl-4 border-0" size="md">
+                    <Input className="my-1 rounded-xl h-14 pl-4 border-0" size="md" style={{ backgroundColor: colors.surface }}>
                       <InputSlot>
-                        <InputIcon as={MailIcon} />
+                        <InputIcon as={MailIcon} color={colors.icon} />
                       </InputSlot>
                       <InputField
                         type="text"
@@ -215,34 +212,33 @@ const SignInScreen = () => {
                         onChangeText={setEmail}
                         keyboardType="email-address"
                         autoCapitalize="none"
-                        className='text-gray-800'
+                        style={{ fontFamily: "Sen-Regular", color: colors.text }}
                       />
                     </Input>
 
                     {/* Password Input Field */}
                     <FormControlLabel>
                       <FormControlLabelText
-                        style={{ fontFamily: "Sen-Regular" }}
-                        className="text-gray-800 uppercase leading-10"
+                        style={{ fontFamily: "Sen-Regular", color: colors.text }} className=" uppercase leading-10"
                       >
                         Password
                       </FormControlLabelText>
                     </FormControlLabel>
                     <Input
-                      className="my-1 rounded-xl h-14 bg-[#F0F5FA] pl-4 pr-4 border-0"
+                      style={{ backgroundColor: colors.surface }}
+                      className="my-1 rounded-xl h-14 pl-4 pr-4 border-0"
                       size="md"
                     >
                       <InputSlot>
-                        <InputIcon as={LockIcon} />
+                        <InputIcon as={LockIcon} color={colors.icon}/>
                       </InputSlot>
                       <InputField
-                        style={{ fontFamily: "Sen-Regular" }}
+                        style={{ fontFamily: "Sen-Regular", color: colors.text }}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="********"
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={!showPassword}
-                        className='text-gray-800'
                       />
                       <InputSlot onPress={handleState}>
                         <InputIcon as={showPassword ? EyeIcon : EyeOffIcon} />
@@ -252,12 +248,13 @@ const SignInScreen = () => {
                     {/* Error Message */}
                     <FormControlError className="mt-2">
                       <FormControlErrorIcon as={AlertCircleIcon} />
-                      <FormControlErrorText>{error}</FormControlErrorText>
+                      <FormControlErrorText style={{ color: colors.error}}>{error}</FormControlErrorText>
                     </FormControlError>
 
                     {/* Submit Button */}
                     <Button
-                      className="w-full bg-[#369BFF] rounded-xl h-14 mt-8"
+                      style={{ backgroundColor: colors.accent }}
+                      className="w-full rounded-xl h-14 mt-8"
                       onPress={handleSignIn}
                       isDisabled={loading}
                     >
@@ -272,15 +269,15 @@ const SignInScreen = () => {
                     </Button>
 
                     {/* Sign Up Link */}
-                                      <Animated.View style={footerAnimatedStyle}>
-                    <Box className='flex-row justify-center mt-8'>
-                      <Text style={{ fontFamily: "Sen-Regular" }} className='text-black'>Don&apos;t have an account? </Text>
-                      <Link href="/sign-up" asChild>
-                        <Pressable>
-                          <Text style={{ fontFamily: "Sen-Bold" }} className='text-[#369BFF]'>Sign Up</Text>
-                        </Pressable>
-                      </Link>
-                    </Box>
+                    <Animated.View style={footerAnimatedStyle}>
+                      <Box className='flex-row justify-center mt-8'>
+                        <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className='text-black'>Don&apos;t have an account? </Text>
+                        <Link href="/sign-up" asChild>
+                          <Pressable>
+                            <Text style={{ fontFamily: "Sen-Bold", color: colors.accent}}>Sign Up</Text>
+                          </Pressable>
+                        </Link>
+                      </Box>
                     </Animated.View>
                   </Animated.View>
                 </FormControl>

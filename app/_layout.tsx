@@ -9,18 +9,16 @@ import '@/global.css';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  const [fontsLoaded] = useFonts({
+    'Sen-Regular': require('../assets/fonts/Sen-Regular.ttf'),
+    'Sen-Bold': require('../assets/fonts/Sen-Bold.ttf'),
   });
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+  if (!fontsLoaded) return null;
 
   return (
     
-    <GluestackUIProvider mode="dark">
+    <GluestackUIProvider mode={colorScheme === 'dark' ? 'dark' : 'light'}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         {/* This option will hide the header for all screens */}
