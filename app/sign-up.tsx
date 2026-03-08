@@ -480,7 +480,7 @@ const SignUpScreen = () => {
     <>
       <Text
         style={{ fontFamily: "Sen-Bold" }}
-        className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
+        className="text-2xl font-semibold text-white mb-5 text-center"
       >
         Step 3: Address</Text>
       <FormControl size="lg" className="w-full mb-2">
@@ -666,7 +666,7 @@ const SignUpScreen = () => {
     <Box className='flex-1 min-h-[500px]'>
       <Text
         style={{ fontFamily: "Sen-Bold" }}
-        className="text-2xl font-semibold text-[#E2E8F0] mb-1 text-center"
+        className="text-2xl font-semibold text-white mb-1 text-center"
       >
         Step 2: Pin Your Location
       </Text>

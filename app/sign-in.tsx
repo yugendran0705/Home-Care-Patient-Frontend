@@ -5,8 +5,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Platform,
   Pressable,
-  StyleSheet,
-  TextInput,
   View,
   KeyboardAvoidingView,
   ScrollView
