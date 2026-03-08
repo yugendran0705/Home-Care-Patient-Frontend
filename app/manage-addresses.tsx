@@ -1,5 +1,8 @@
+import { Box } from "@/components/ui/box";
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
 import { Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import {
@@ -8,13 +11,14 @@ import {
   Pressable,
   ScrollView,
   RefreshControl,
-  StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import axiosInstance from '../axiosInstance'; 
-
+import axiosInstance from '../axiosInstance';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from "react-native";
+import { Plus } from "lucide-react-native";
+import { Divider } from "@/components/ui/divider";
 interface Address {
   id: string;
   address_line_1: string;
@@ -26,6 +30,8 @@ interface Address {
 }
 
 const ManageAddressesScreen = () => {
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,7 +48,6 @@ const ManageAddressesScreen = () => {
     }
   }, []);
 
-  // useFocusEffect will refetch data every time the screen comes into view
   useFocusEffect(
     useCallback(() => {
       const initialLoad = async () => {
@@ -56,13 +61,12 @@ const ManageAddressesScreen = () => {
 
   const handleSetPrimary = async (addressId: string) => {
     try {
-        // The backend handles the logic of setting others to false
-        await axiosInstance.patch(`/addresses/set_primary/${addressId}`);
-        Alert.alert('Success', 'Primary address updated.');
-        await loadData(); // Refresh the list
+      await axiosInstance.patch(`/addresses/set_primary/${addressId}`);
+      Alert.alert('Success', 'Primary address updated.');
+      await loadData();
     } catch (error) {
-        Alert.alert('Error', 'Could not update primary address.');
-        console.error(error);
+      Alert.alert('Error', 'Could not update primary address.');
+      console.error(error);
     }
   };
 
@@ -74,82 +78,78 @@ const ManageAddressesScreen = () => {
 
   if (loading) {
     return (
-      <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
-      </LinearGradient>
+      <Box className="flex-1 justify-center items-center bg-black">
+        <ActivityIndicator size="large" color="#4c8bf5" />
+      </Box>
     );
   }
 
   return (
-    <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.gradientBackground}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.header}>
-                <Pressable onPress={() => router.back()} style={styles.backButton}>
-                    <Feather name="arrow-left" size={24} color="#fff" />
-                </Pressable>
-                <Text style={styles.title}>Manage Addresses</Text>
-                <View style={{ width: 40 }} />
-            </View>
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={['#000']} // for Android
-                tintColor={'#fff'} // for iOS
-              />
-            }
+    <SafeAreaProvider>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.primaryBackground }}>
+        <Box className="flex-row items-center justify-between px-[10px] mt-[20px]">
+          <Pressable onPress={() => router.back()} className="p-[10px]">
+            <Feather name="arrow-left" size={24} color="#fff" />
+          </Pressable>
+          <Text style={{ fontFamily: "Sen-Bold" }} className="text-[22px] text-white">Manage Addresses</Text>
+          <Box className="w-[40px]" />
+        </Box>
+        <ScrollView
+          contentContainerStyle={{ padding: 20 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#000']}
+              tintColor={'#fff'}
+            />
+          }
+        >
+          {addresses.map((addr) => (
+            <VStack key={addr.id} style={{backgroundColor: colors.surface}} className="rounded-[14px] p-[20px] mb-[20px] relative">
+              <Box>
+                <Text style={{ fontFamily: "Sen-Bold", color: colors.text }} className="text-[16px] mb-[4px]">{addr.address_line_1}, {addr.address_line_2}</Text>
+                <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-[14px] text-white/80">{addr.city}, {addr.pincode}</Text>
+              </Box>
+
+              {addr.is_primary && (
+                <Box className="absolute top-[15px] right-[15px] bg-[#4CAF50] rounded-[10px] px-[8px] py-[4px]">
+                  <Text style={{ fontFamily: "Sen-Bold" }} className="text-white text-[12px]">Primary</Text>
+                </Box>
+              )}
+
+              <Divider style={{ backgroundColor: colors.icon }} className="my-3" />
+
+              <Box className="flex-row justify-end pt-[15px]">
+                {!addr.is_primary && (
+                  <Button
+                    className="px-[15px] py-[8px] ml-[10px] rounded-[8px]" style={{backgroundColor: colors.accent}}
+                    onPress={() => handleSetPrimary(addr.id)}
+                  >
+                    <ButtonText style={{ fontFamily: "Sen-Bold" }} className="text-white">Set as Primary</ButtonText>
+                  </Button>
+                )}
+                <Button
+                  className="px-[15px] py-[8px] ml-[10px] bg-[#192f6a] rounded-[8px]" style={{backgroundColor: colors.accent}}
+                  onPress={() => router.push({ pathname: '/address-form', params: { addressId: addr.id } })}
+                >
+                  <ButtonText style={{ fontFamily: "Sen-Bold" }} className="text-white" >Edit</ButtonText>
+                </Button>
+              </Box>
+            </VStack>
+          ))}
+
+          <Button
+            className="flex-row bg-white py-[15px] rounded-[14px] items-center justify-center mt-[10px] h-auto"
+            onPress={() => router.push('/address-form')}
           >
-            {addresses.map((addr) => (
-              <View key={addr.id} style={styles.card}>
-                <View>
-                    <Text style={styles.addressText}>{addr.address_line_1}, {addr.address_line_2}</Text>
-                    <Text style={styles.addressSubText}>{addr.city}, {addr.pincode}</Text>
-                </View>
-                {addr.is_primary && <View style={styles.primaryBadge}><Text style={styles.primaryText}>Primary</Text></View>}
-                <View style={styles.actionsContainer}>
-                    {!addr.is_primary && (
-                        <Pressable style={styles.actionButton} onPress={() => handleSetPrimary(addr.id)}>
-                            <Text style={styles.actionButtonText}>Set as Primary</Text>
-                        </Pressable>
-                    )}
-                    <Pressable style={styles.actionButton} onPress={() => router.push({ pathname: '/address-form', params: { addressId: addr.id } })}>
-                        <Text style={styles.actionButtonText}>Edit</Text>
-                    </Pressable>
-                </View>
-              </View>
-            ))}
-            <Pressable style={styles.addButton} onPress={() => router.push('/address-form')}>
-                <Feather name="plus" size={20} color="#192f6a" />
-                <Text style={styles.addButtonText}>Add New Address</Text>
-            </Pressable>
-          </ScrollView>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </LinearGradient>
+            <ButtonIcon as={Plus} className="text-black mr-[10px]" />
+            <ButtonText style={{ fontFamily: "Sen-Bold" }} className="text-black text-[18px]">Add New Address</ButtonText>
+          </Button>
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
-
-const styles = StyleSheet.create({
-    gradientBackground: { flex: 1 },
-    safeArea: { flex: 1 },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, marginTop: 20 },
-    backButton: { padding: 10 },
-    title: { fontSize: 22, fontWeight: 'bold', color: '#fff' },
-    scrollContainer: { padding: 20 },
-    card: { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 14, padding: 20, marginBottom: 20 },
-    addressText: { fontSize: 16, color: '#fff', fontWeight: 'bold', marginBottom: 4 },
-    addressSubText: { fontSize: 14, color: 'rgba(255, 255, 255, 0.8)' },
-    primaryBadge: { position: 'absolute', top: 15, right: 15, backgroundColor: '#4CAF50', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
-    primaryText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-    actionsContainer: { flexDirection: 'row', justifyContent: 'flex-end', borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.2)', marginTop: 15, paddingTop: 15 },
-    actionButton: { paddingHorizontal: 15, paddingVertical: 8, marginLeft: 10, backgroundColor: '#192f6a', borderRadius: 8 },
-    actionButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-    addButton: { flexDirection: 'row', backgroundColor: '#fff', paddingVertical: 15, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
-    addButtonText: { color: '#192f6a', fontSize: 18, fontWeight: 'bold', marginLeft: 10 },
-});
 
 export default ManageAddressesScreen;
