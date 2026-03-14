@@ -190,6 +190,7 @@ const EditPersonalDetailsScreen = () => {
                                 value={details.phone_number}
                                 onChangeText={v => handleDetailsChange('phone_number', v)}
                                 keyboardType="phone-pad"
+                                maxLength={10}
                             />
                         </Input>
                     </FormControl>

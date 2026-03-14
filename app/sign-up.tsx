@@ -359,9 +359,10 @@ const SignUpScreen = () => {
         >
           <InputField
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
+            type={isPasswordVisible ? "text" : "password"}
             placeholder="********"
             value={formData.password}
-            onChangeText={v => handleFormChange('password', v)} secureTextEntry />
+            onChangeText={v => handleFormChange('password', v)} />
           <InputSlot onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
             <InputIcon as={isPasswordVisible ? EyeIcon : EyeOffIcon} color={colors.icon} />
           </InputSlot>

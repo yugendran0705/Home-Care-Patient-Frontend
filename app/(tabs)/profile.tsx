@@ -56,7 +56,7 @@ interface ProfileData {
 const ProfileScreen = () => {
 
   const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors['light'];
+  const colors = Colors[colorScheme];
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);

@@ -1,21 +1,28 @@
-import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    ScrollView,
+    useColorScheme,
+    View,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import axiosInstance from '../axiosInstance'; 
+import axiosInstance from '../axiosInstance';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { Colors } from '@/constants/Colors';
+import { Button, ButtonSpinner, ButtonText, ButtonIcon } from '@/components/ui/button';
+import { FormControl, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
+import { Input, InputField } from '@/components/ui/input';
+import { Box } from '@/components/ui/box';
+import { VStack } from '@/components/ui/vstack';
+import { Text } from '@/components/ui/text';
+import { Icon } from '@/components/ui/icon';
+import { ArrowLeft, MapPin } from 'lucide-react-native';
+import Animated, { Easing, FadeInRight, FadeOutLeft } from 'react-native-reanimated';
 
 const initialAddressState = {
     address_line_1: '',
@@ -29,14 +36,18 @@ const initialAddressState = {
 };
 
 const AddressFormScreen = () => {
+    const colorScheme = useColorScheme() ?? 'light';
+    const colors = Colors["light"]; // Preserving your original static fallback
+
     const params = useLocalSearchParams();
     const addressId = params.addressId as string | undefined;
     const isEditMode = !!addressId;
+    const [error, setError] = useState('');
 
     const [address, setAddress] = useState(initialAddressState);
     const [loading, setLoading] = useState(true);
     const [isGeocoding, setIsGeocoding] = useState(false);
-    
+
     // Step 1: Map, Step 2: Form
     const [step, setStep] = useState(isEditMode ? 2 : 1);
 
@@ -105,6 +116,11 @@ const AddressFormScreen = () => {
     };
 
     const handleSave = async () => {
+        setError("")
+        if (!address.address_line_1 || !address.city || !address.pincode || !address.state) {
+            setError('Please fill all required fields.');
+            return;
+        }
         setLoading(true);
         try {
             if (isEditMode) {
@@ -153,16 +169,16 @@ const AddressFormScreen = () => {
 
     if (loading) {
         return (
-          <View style={[styles.gradientBackground, { justifyContent: 'center', alignItems: 'center' }]}>
-            <ActivityIndicator size="large" color="#fff" />
-          </View>
+            <Box className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#fff" />
+            </Box>
         );
     }
 
     const renderMapStep = () => (
-        <View style={{ flex: 1 }}>
+        <View className="flex-1">
             <MapView
-                style={styles.map}
+                style={{ flex: 1 }}
                 initialRegion={{
                     latitude: Number(address.latitude),
                     longitude: Number(address.longitude),
@@ -170,9 +186,9 @@ const AddressFormScreen = () => {
                     longitudeDelta: 0.01,
                 }}
                 onPress={(e) => {
-                  // let user drop pin by tapping the map
-                  handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
-                  handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
+                    // let user drop pin by tapping the map
+                    handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
+                    handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
                 }}
             >
                 <Marker
@@ -184,74 +200,262 @@ const AddressFormScreen = () => {
                     }}
                 />
             </MapView>
-            <Pressable style={styles.confirmButton} onPress={handleConfirmLocation} disabled={isGeocoding}>
-                {isGeocoding ? <ActivityIndicator color="#192f6a" /> : <Text style={styles.confirmButtonText}>Confirm Location</Text>}
-            </Pressable>
+            <Button
+                onPress={handleConfirmLocation}
+                className="absolute bottom-10 left-5 right-5 bg-white py-[15px] h-fit rounded-[14px] items-center"
+                isDisabled={loading}>
+                {loading ? (
+                    <ButtonSpinner color="black" />
+                ) : (
+                    <ButtonText
+                        style={{ fontFamily: "Sen-Bold" }}
+                        className="text-xl text-black"
+                    >Save Changes</ButtonText>
+                )}
+            </Button>
         </View>
     );
 
     const renderFormStep = () => (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <TextInput style={styles.input} placeholder="Address Line 1" value={address.address_line_1} onChangeText={v => handleAddressChange('address_line_1', v)} />
-            <TextInput style={styles.input} placeholder="Address Line 2" value={address.address_line_2} onChangeText={v => handleAddressChange('address_line_2', v)} />
-            <TextInput style={styles.input} placeholder="City" value={address.city} onChangeText={v => handleAddressChange('city', v)} />
-            <TextInput style={styles.input} placeholder="State" value={address.state} onChangeText={v => handleAddressChange('state', v)} />
-            <TextInput style={styles.input} placeholder="Pincode" value={address.pincode} onChangeText={v => handleAddressChange('pincode', v)} keyboardType="number-pad"/>
-            
-            {isEditMode && (
-                <Pressable style={styles.changeLocationButton} onPress={() => setStep(1)}>
-                    <Feather name="map-pin" size={16} color="#fff" />
-                    <Text style={styles.changeLocationButtonText}>Change Pin Location</Text>
-                </Pressable>
-            )}
+        <ScrollView contentContainerStyle={{ padding: 20 }}>
+            <VStack space="md" className="w-full mb-4">
+                <FormControl size="lg" className="w-full">
+                    <FormControlLabel>
+                        <FormControlLabelText
+                            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+                        >
+                            Address Line 1
+                        </FormControlLabelText>
+                    </FormControlLabel>
+                    <Input
+                        style={{
+                            elevation: 5,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.35,
+                            shadowRadius: 4,
+                            backgroundColor: colors.surface,
+                        }}
+                        className="my-1 rounded-xl h-16 pl-2 border-0"
+                        size="md"
+                    >
+                        <InputField
+                            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
+                            placeholder="Address Line 1"
+                            value={address.address_line_1}
+                            onChangeText={v => handleAddressChange('address_line_1', v)}
+                        />
+                    </Input>
+                </FormControl>
 
-            <Pressable style={styles.saveButton} onPress={handleSave} disabled={loading}>
-                {loading ? <ActivityIndicator color="#192f6a" /> : <Text style={styles.saveButtonText}>Save Address</Text>}
-            </Pressable>
+                <FormControl size="lg" className="w-full">
+                    <FormControlLabel>
+                        <FormControlLabelText
+                            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+                        >
+                            Address Line 2 (Optional)
+                        </FormControlLabelText>
+                    </FormControlLabel>
+                    <Input
+                        style={{
+                            elevation: 5,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.35,
+                            shadowRadius: 4,
+                            backgroundColor: colors.surface,
+                        }}
+                        className="my-1 rounded-xl h-16 pl-2 border-0"
+                        size="md"
+                    >
+                        <InputField
+                            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
+                            placeholder="Address Line 2"
+                            value={address.address_line_2}
+                            onChangeText={v => handleAddressChange('address_line_2', v)}
+                        />
+                    </Input>
+                </FormControl>
 
-            {isEditMode && (
-              <Pressable style={styles.deleteButton} onPress={handleDelete}>
-                <Text style={styles.deleteButtonText}>Delete Address</Text>
-              </Pressable>
-            )}
+                <FormControl size="lg" className="w-full">
+                    <FormControlLabel>
+                        <FormControlLabelText
+                            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+                        >
+                            City
+                        </FormControlLabelText>
+                    </FormControlLabel>
+                    <Input
+                        style={{
+                            elevation: 5,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.35,
+                            shadowRadius: 4,
+                            backgroundColor: colors.surface,
+                        }}
+                        className="my-1 rounded-xl h-16 pl-2 border-0"
+                        size="md"
+                    >
+                        <InputField
+                            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
+                            placeholder="City"
+                            value={address.city}
+                            onChangeText={v => handleAddressChange('city', v)}
+                        />
+                    </Input>
+                </FormControl>
+
+                <FormControl size="lg" className="w-full">
+                    <FormControlLabel>
+                        <FormControlLabelText
+                            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+                        >
+                            State
+                        </FormControlLabelText>
+                    </FormControlLabel>
+                    <Input
+                        style={{
+                            elevation: 5,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.35,
+                            shadowRadius: 4,
+                            backgroundColor: colors.surface,
+                        }}
+                        className="my-1 rounded-xl h-16 pl-2 border-0"
+                        size="md"
+                    >
+                        <InputField
+                            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
+                            placeholder="State"
+                            value={address.state}
+                            onChangeText={v => handleAddressChange('state', v)}
+                        />
+                    </Input>
+                </FormControl>
+
+                <FormControl size="lg" className="w-full">
+                    <FormControlLabel>
+                        <FormControlLabelText
+                            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+                        >
+                            Pincode
+                        </FormControlLabelText>
+                    </FormControlLabel>
+                    <Input
+                        style={{
+                            elevation: 5,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.35,
+                            shadowRadius: 4,
+                            backgroundColor: colors.surface,
+                        }}
+                        className="my-1 rounded-xl h-16 pl-2 border-0"
+                        size="md"
+                    >
+                        <InputField
+                            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
+                            placeholder="Pincode"
+                            value={address.pincode}
+                            maxLength={6}
+                            onChangeText={v => handleAddressChange('pincode', v)}
+                            keyboardType="number-pad"
+                        />
+                    </Input>
+                </FormControl>
+            </VStack>
+
+            {error ? (
+                <Box className="bg-white/70 rounded-2xl border border-white/20 p-2 mb-4">
+                    <Text
+                        style={{ fontFamily: "Sen-Regular", color: colors.error }}
+                        className="text-center text-[14px]"
+                    >
+                        {error}
+                    </Text>
+                </Box>
+            ) : null}
+
+            <VStack space="md">
+                {isEditMode && (
+                    <Button
+                        onPress={() => setStep(1)}
+                        className="py-3 bg-white/80 rounded-xl h-fit"
+                        isDisabled={loading}
+                    >
+                        <ButtonIcon as={MapPin} color="#000" className="mr-2" />
+                        <ButtonText
+                            style={{ fontFamily: "Sen-Bold" }}
+                            className="text-base text-black"
+                        >
+                            Change address
+                        </ButtonText>
+                    </Button>
+                )}
+
+                <Button
+                    onPress={handleSave}
+                    className="bg-white py-4 rounded-xl h-15"
+                    isDisabled={loading}
+                >
+                    {loading ? (
+                        <ButtonSpinner color="black" />
+                    ) : (
+                        <ButtonText
+                            style={{ fontFamily: "Sen-Bold" }}
+                            className="text-xl text-black"
+                        >
+                            Save Changes
+                        </ButtonText>
+                    )}
+                </Button>
+
+                {isEditMode && (
+                    <Button
+                        className="py-4 rounded-xl h-15 mb-10"
+                        onPress={handleDelete}
+                        style={{ backgroundColor: colors.error }}
+                    >
+                        <ButtonText
+                            style={{ fontFamily: "Sen-Bold" }}
+                            className="text-white text-[18px]"
+                        >
+                            Delete Address
+                        </ButtonText>
+                    </Button>
+                )}
+            </VStack>
         </ScrollView>
     );
 
     return (
-        <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.gradientBackground}>
-          <SafeAreaProvider>
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.header}>
-                    <Pressable onPress={() => step === 2 ? setStep(1) : router.back()} style={styles.backButton}>
-                        <Feather name="arrow-left" size={24} color="#fff" />
+        <SafeAreaProvider>
+            <SafeAreaView className="flex-1" style={{ backgroundColor: colors.primaryBackground }}>
+                <Box className="flex-row items-center justify-between px-4 mt-5 mb-2">
+                    <Pressable onPress={() => step === 2 ? setStep(1) : router.back()} className="p-2">
+                        <Icon as={ArrowLeft} size="xl" color="#fff" />
                     </Pressable>
-                    <Text style={styles.title}>{step === 1 ? 'Set Location' : (isEditMode ? 'Edit Address' : 'Confirm Address')}</Text>
-                    <View style={{ width: 40 }} />
-                </View>
-                {step === 1 ? renderMapStep() : renderFormStep()}
+                    <Text style={{ fontFamily: "Sen-Bold" }} className="text-[22px] text-white">
+                        {step === 1 ? 'Set Location' : (isEditMode ? 'Edit Address' : 'Confirm Address')}
+                    </Text>
+                    <Box className="w-[40px]" />
+                </Box>
+                <Animated.View
+                    className="flex-1"
+                    key={step}
+                    entering={FadeInRight.duration(500)
+                        .delay(200)
+                        .easing(Easing.out(Easing.exp))}
+                    exiting={FadeOutLeft.duration(200).easing(Easing.in(Easing.exp))}
+                >
+                    {step === 1 ? renderMapStep() : renderFormStep()}
+                </Animated.View>
+
             </SafeAreaView>
-          </SafeAreaProvider>
-        </LinearGradient>
+        </SafeAreaProvider>
     );
 };
-
-const styles = StyleSheet.create({
-    gradientBackground: { flex: 1 },
-    safeArea: { flex: 1 },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, marginTop: 20 },
-    backButton: { padding: 10 },
-    title: { fontSize: 22, fontWeight: 'bold', color: '#fff' },
-    scrollContainer: { padding: 20 },
-    input: { height: 55, backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: 14, paddingHorizontal: 15, fontSize: 16, color: '#fff', marginBottom: 15 },
-    map: { ...StyleSheet.absoluteFillObject },
-    confirmButton: { position: 'absolute', bottom: 40, left: 20, right: 20, backgroundColor: '#fff', paddingVertical: 15, borderRadius: 14, alignItems: 'center' },
-    confirmButtonText: { color: '#192f6a', fontSize: 18, fontWeight: 'bold' },
-    changeLocationButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingVertical: 12, borderRadius: 14, marginBottom: 20 },
-    changeLocationButtonText: { color: '#fff', fontSize: 16, fontWeight: '500', marginLeft: 10 },
-    saveButton: { backgroundColor: '#fff', paddingVertical: 15, borderRadius: 14, alignItems: 'center', marginTop: 10 },
-    saveButtonText: { color: '#192f6a', fontSize: 18, fontWeight: 'bold' },
-    deleteButton: { backgroundColor: '#d9534f', paddingVertical: 15, borderRadius: 14, alignItems: 'center', marginTop: 10 },
-    deleteButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-});
 
 export default AddressFormScreen;
