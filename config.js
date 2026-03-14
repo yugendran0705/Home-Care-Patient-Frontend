@@ -1,4 +1,5 @@
 const data = {
-    apiUrl: "http://10.244.125.199:8000/api/v1",
-}
+  apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api/v1",
+};
+
 export default data;

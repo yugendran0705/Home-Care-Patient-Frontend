@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import {
@@ -37,7 +36,7 @@ const initialAddressState = {
 
 const AddressFormScreen = () => {
     const colorScheme = useColorScheme() ?? 'light';
-    const colors = Colors["light"]; // Preserving your original static fallback
+    const colors = Colors[colorScheme];
 
     const params = useLocalSearchParams();
     const addressId = params.addressId as string | undefined;
@@ -203,14 +202,14 @@ const AddressFormScreen = () => {
             <Button
                 onPress={handleConfirmLocation}
                 className="absolute bottom-10 left-5 right-5 bg-white py-[15px] h-fit rounded-[14px] items-center"
-                isDisabled={loading}>
-                {loading ? (
+                isDisabled={isGeocoding}>
+                {isGeocoding ? (
                     <ButtonSpinner color="black" />
                 ) : (
                     <ButtonText
                         style={{ fontFamily: "Sen-Bold" }}
                         className="text-xl text-black"
-                    >Save Changes</ButtonText>
+                    >Confirm Location</ButtonText>
                 )}
             </Button>
         </View>

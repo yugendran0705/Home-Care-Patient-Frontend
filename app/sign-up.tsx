@@ -33,7 +33,7 @@ import {
   InputSlot,
 } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { ArrowLeft, ArrowRight, Mars, Venus } from "lucide-react-native";
+import { ArrowLeft, Mars, Venus } from "lucide-react-native";
 import Animated, {
   Easing,
   FadeInRight,
@@ -71,6 +71,7 @@ const SignUpScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   // --- State for the Date Picker ---
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -101,12 +102,13 @@ const SignUpScreen = () => {
 
   useEffect(() => {
     const getLocation = async () => {
-      setLoading(true);
+      setIsFetchingLocation(true);
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setError('Permission to access location was denied');
         handleAddressChange('latitude', 13.0403);
         handleAddressChange('longitude', 80.2336);
+        setIsFetchingLocation(false);
         return;
       }
       try {
@@ -118,12 +120,11 @@ const SignUpScreen = () => {
         handleAddressChange('latitude', 13.0403);
         handleAddressChange('longitude', 80.2336);
       } finally {
-        setLoading(false);
+        setIsFetchingLocation(false);
       }
     };
     if (step === 2) {
       getLocation();
-      setLoading(false) // Fixed the issue of submit button of step 3 set to load state even when navigating b/w previous pages
     }
   }, [step]);
 

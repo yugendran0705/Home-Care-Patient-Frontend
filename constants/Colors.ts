@@ -1,5 +1,5 @@
 /**
- * Colors.tsx
+ * Colors.ts
  * * To use these colors in your components, you can use Expo's useColorScheme:
  * const colorScheme = useColorScheme() ?? 'light';
  * const colors = Colors[colorScheme];

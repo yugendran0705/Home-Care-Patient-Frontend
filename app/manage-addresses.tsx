@@ -11,7 +11,6 @@ import {
   Pressable,
   ScrollView,
   RefreshControl,
-  View,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import axiosInstance from '../axiosInstance';
@@ -34,16 +33,14 @@ const ManageAddressesScreen = () => {
   const colors = Colors[colorScheme];
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
       const response = await axiosInstance.get('/addresses/me');
       setAddresses(response.data);
-      setError('');
     } catch (e) {
-      setError('Failed to fetch addresses.');
+      Alert.alert('Error', 'Failed to fetch addresses.');
       console.error(e);
     }
   }, []);
@@ -106,7 +103,7 @@ const ManageAddressesScreen = () => {
           }
         >
           {addresses.map((addr) => (
-            <VStack key={addr.id} style={{backgroundColor: colors.surface}} className="rounded-[14px] p-[20px] mb-[20px] relative">
+            <VStack key={addr.id} style={{ backgroundColor: colors.surface }} className="rounded-[14px] p-[20px] mb-[20px] relative">
               <Box>
                 <Text style={{ fontFamily: "Sen-Bold", color: colors.text }} className="text-[16px] mb-[4px]">{addr.address_line_1}, {addr.address_line_2}</Text>
                 <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-[14px] text-white/80">{addr.city}, {addr.pincode}</Text>
@@ -123,14 +120,14 @@ const ManageAddressesScreen = () => {
               <Box className="flex-row justify-end pt-[15px]">
                 {!addr.is_primary && (
                   <Button
-                    className="px-[15px] py-[8px] ml-[10px] rounded-[8px]" style={{backgroundColor: colors.accent}}
+                    className="px-[15px] py-[8px] ml-[10px] rounded-[8px]" style={{ backgroundColor: colors.accent }}
                     onPress={() => handleSetPrimary(addr.id)}
                   >
                     <ButtonText style={{ fontFamily: "Sen-Bold" }} className="text-white">Set as Primary</ButtonText>
                   </Button>
                 )}
                 <Button
-                  className="px-[15px] py-[8px] ml-[10px] bg-[#192f6a] rounded-[8px]" style={{backgroundColor: colors.accent}}
+                  className="px-[15px] py-[8px] ml-[10px] bg-[#192f6a] rounded-[8px]" style={{ backgroundColor: colors.accent }}
                   onPress={() => router.push({ pathname: '/address-form', params: { addressId: addr.id } })}
                 >
                   <ButtonText style={{ fontFamily: "Sen-Bold" }} className="text-white" >Edit</ButtonText>
