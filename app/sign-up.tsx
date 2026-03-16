@@ -361,6 +361,7 @@ const SignUpScreen = () => {
           <InputField
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
             type={isPasswordVisible ? "text" : "password"}
+            secureTextEntry={!isPasswordVisible}
             placeholder="********"
             value={formData.password}
             onChangeText={v => handleFormChange('password', v)} />
@@ -678,7 +679,7 @@ const SignUpScreen = () => {
       >
         Drag the pin to your exact address
       </Text>
-      {loading && !location ? <ActivityIndicator size="large" color="#fff" /> :
+      {isFetchingLocation ? <ActivityIndicator size="large" color="#fff" /> :
         <Box
           style={{
             elevation: 5,
@@ -724,7 +725,7 @@ const SignUpScreen = () => {
           shadowOpacity: 0.35,
           shadowRadius: 4,
         }}
-        isDisabled={loading}
+        isDisabled={isFetchingLocation}
         className="bg-white h-16 rounded-[14px] w-full items-center shadow-lg"
       >
         {isGeocoding ? <ActivityIndicator color="#192f6a" /> : <ButtonText

@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Platform,
   Pressable,
-  View,
   KeyboardAvoidingView,
   ScrollView
 } from 'react-native';
