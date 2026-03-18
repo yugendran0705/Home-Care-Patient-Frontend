@@ -139,7 +139,7 @@ const SignInScreen = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className='flex-1' style={{ backgroundColor: colors.primaryBackground}}>
+      <SafeAreaView className='flex-1' style={{ backgroundColor: colors.primaryBackground }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         // keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
@@ -203,7 +203,6 @@ const SignInScreen = () => {
                         <InputIcon as={MailIcon} color={colors.icon} />
                       </InputSlot>
                       <InputField
-                        type="text"
                         placeholder="example@gmail.com"
                         value={email}
                         onChangeText={setEmail}
@@ -227,11 +226,10 @@ const SignInScreen = () => {
                       size="md"
                     >
                       <InputSlot>
-                        <InputIcon as={LockIcon} color={colors.icon}/>
+                        <InputIcon as={LockIcon} color={colors.icon} />
                       </InputSlot>
                       <InputField
                         style={{ fontFamily: "Sen-Regular", color: colors.text }}
-                        type={showPassword ? 'text' : 'password'}
                         placeholder="********"
                         value={password}
                         onChangeText={setPassword}
@@ -243,10 +241,12 @@ const SignInScreen = () => {
                     </Input>
 
                     {/* Error Message */}
-                    <FormControlError className="mt-2">
-                      <FormControlErrorIcon as={AlertCircleIcon} />
-                      <FormControlErrorText style={{ color: colors.error}}>{error}</FormControlErrorText>
-                    </FormControlError>
+                    {error ? (
+                      <FormControlError className="mt-2">
+                        <FormControlErrorIcon as={AlertCircleIcon} />
+                        <FormControlErrorText style={{ color: colors.error }}>{error}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
 
                     {/* Submit Button */}
                     <Button
@@ -271,7 +271,7 @@ const SignInScreen = () => {
                         <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className='text-black'>Don&apos;t have an account? </Text>
                         <Link href="/sign-up" asChild>
                           <Pressable>
-                            <Text style={{ fontFamily: "Sen-Bold", color: colors.accent}}>Sign Up</Text>
+                            <Text style={{ fontFamily: "Sen-Bold", color: colors.accent }}>Sign Up</Text>
                           </Pressable>
                         </Link>
                       </Box>

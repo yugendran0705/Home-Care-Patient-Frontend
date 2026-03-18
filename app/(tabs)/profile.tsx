@@ -145,26 +145,26 @@ const ProfileScreen = () => {
                 <Text style={{ fontFamily: "Sen-Bold" }} className="text-white text-[40px]">{profile.first_name.charAt(0)}{profile.last_name.charAt(0)}</Text>
               </Box>
               <Text style={{ fontFamily: "Sen-Bold" }} className="text-[26px] text-white">{profile.first_name} {profile.last_name}</Text>
-              <Text style={{ fontFamily: "Sen-Regular", color: colors.textMutedInverted  }} className="text-[16px] text-white/80 mt-[4px]">{profile.user.email}</Text>
+              <Text style={{ fontFamily: "Sen-Regular", color: colors.textMutedInverted }} className="text-[16px] text-white/80 mt-[4px]">{profile.user.email}</Text>
             </Box>
 
-            <VStack space="lg" style={{backgroundColor: colors.surface}} className="rounded-[12px] p-6 mb-4">
+            <VStack space="lg" style={{ backgroundColor: colors.surface }} className="rounded-[12px] p-6 mb-4">
               <Box className="flex-row justify-between items-center mb-1">
                 <Text
-                  style={{ fontFamily: "Sen-Bold", color:colors.text }}
+                  style={{ fontFamily: "Sen-Bold", color: colors.text }}
                   className="text-[18px]"
                 >
                   Personal Details
                 </Text>
                 <Link href="/edit-personal-details" asChild>
                   <Pressable>
-                    <Icon as={Edit} style={{color: colors.accent }} size="lg" />
+                    <Icon as={Edit} style={{ color: colors.accent }} size="lg" />
                   </Pressable>
                 </Link>
               </Box>
-              <Divider style={{backgroundColor: colors.icon}} />
+              <Divider style={{ backgroundColor: colors.icon }} />
               <Box className="flex-row items-center gap-4">
-                <Icon as={Phone} style={{color: colors.icon }} />
+                <Icon as={Phone} style={{ color: colors.icon }} />
                 <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-lg">
                   {profile.phone_number}
                 </Text>
@@ -172,24 +172,28 @@ const ProfileScreen = () => {
 
 
               <Box className="flex-row items-center gap-4">
-                <Icon as={CalendarDays} style={{color: colors.icon }} />
+                <Icon as={CalendarDays} style={{ color: colors.icon }} />
                 <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-lg">
-                  {new Date(profile.date_of_birth).toLocaleDateString()}
-                </Text>
+                  {profile.date_of_birth
+                    ? (() => {
+                      const dob = new Date(profile.date_of_birth);
+                      return isNaN(dob.getTime()) ? "Not provided" : dob.toLocaleDateString();
+                    })()
+                    : "Not provided"}                </Text>
               </Box>
 
               <Box className="flex-row items-center gap-4">
-                <Icon as={profile.gender === "Male" ? Mars : Venus} style={{color: colors.icon}} />
+                <Icon as={profile.gender === "Male" ? Mars : Venus} style={{ color: colors.icon }} />
                 <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-lg">
                   {profile.gender}
                 </Text>
               </Box>
             </VStack>
 
-            <VStack space="lg" style={{backgroundColor: colors.surface}} className="rounded-[12px] p-6 mb-4">
+            <VStack space="lg" style={{ backgroundColor: colors.surface }} className="rounded-[12px] p-6 mb-4">
               <Box className="flex-row justify-between items-center mb-1">
                 <Text
-                  style={{ fontFamily: "Sen-Bold", color: colors.text  }}
+                  style={{ fontFamily: "Sen-Bold", color: colors.text }}
                   className="text-[18px]"
                 >
                   My Addresses
@@ -202,22 +206,22 @@ const ProfileScreen = () => {
                   </Pressable>
                 </Link>
               </Box>
-              <Divider style={{backgroundColor: colors.icon}} />
+              <Divider style={{ backgroundColor: colors.icon }} />
 
               {addresses.map((addr) => (
                 <Box key={addr.id} className="flex-row items-start gap-4 mb-2">
-                  <Icon as={LocationEdit} style={{color: colors.icon}} className=" mt-1" />
+                  <Icon as={LocationEdit} style={{ color: colors.icon }} className=" mt-1" />
                   <VStack className="flex-1">
-                    <Text style={{ fontFamily: "Sen-Regular", color: colors.text  }} className="text-[16px]">
+                    <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-[16px]">
                       {addr.address_line_1}, {addr.city}
                     </Text>
-                    <Text style={{ fontFamily: "Sen-Regular", color: colors.textSecondary  }} className="text-[14px]">
+                    <Text style={{ fontFamily: "Sen-Regular", color: colors.textSecondary }} className="text-[14px]">
                       {addr.pincode}
                     </Text>
                   </VStack>
                   {addr.is_primary && (
-                    <Box style={{backgroundColor: colors.success}} className="rounded-[10px] px-2 py-1">
-                      <Text style={{fontFamily: "Sen-Bold"}} className="text-white text-[10px]">Primary</Text>
+                    <Box style={{ backgroundColor: colors.success }} className="rounded-[10px] px-2 py-1">
+                      <Text style={{ fontFamily: "Sen-Bold" }} className="text-white text-[10px]">Primary</Text>
                     </Box>
                   )}
                 </Box>
@@ -227,7 +231,7 @@ const ProfileScreen = () => {
             <Button
               className="py-4 rounded-xl h-15 mt-6 mb-10"
               onPress={handleLogout}
-              style={{backgroundColor: colors.error}}
+              style={{ backgroundColor: colors.error }}
             >
               <ButtonIcon as={LogOut} className="text-white mr-2" />
               <Text

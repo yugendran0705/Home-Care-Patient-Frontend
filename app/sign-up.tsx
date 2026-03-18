@@ -103,6 +103,9 @@ const SignUpScreen = () => {
   useEffect(() => {
     const getLocation = async () => {
       setIsFetchingLocation(true);
+      if (formData.address.latitude !== 13.0403 || formData.address.longitude !== 80.2336) {
+      return; 
+    }
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setError('Permission to access location was denied');
@@ -360,7 +363,6 @@ const SignUpScreen = () => {
         >
           <InputField
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
-            type={isPasswordVisible ? "text" : "password"}
             secureTextEntry={!isPasswordVisible}
             placeholder="********"
             value={formData.password}
@@ -716,7 +718,7 @@ const SignUpScreen = () => {
           </MapView>
         </Box>
       }
-      <Button
+      {/* <Button
         onPress={handleConfirmLocation} disabled={isGeocoding}
         style={{
           elevation: 5,
@@ -732,7 +734,7 @@ const SignUpScreen = () => {
           style={{ fontFamily: "Sen-Bold" }}
           className="text-xl"
         >Confirm</ButtonText>}
-      </Button>
+      </Button> */}
     </Box>
   );
 
@@ -799,19 +801,21 @@ const SignUpScreen = () => {
                 <Box className="mt-4 w-full">
                   {step < 3 ? (
                     <Button
-                      onPress={handleNextStep}
+                      onPress={step === 2 ? handleConfirmLocation : handleNextStep}
                       className="bg-white h-16 rounded-[14px] items-center shadow-lg"
                       onPressIn={handleButtonPressIn}
                       onPressOut={handleButtonPressOut}
                       style={actionButtonShadow}
-                      isDisabled={loading}>
-                      {loading ? (
+                      isDisabled={loading || isGeocoding || isFetchingLocation}>
+                      {(loading || isGeocoding) ? (
                         <ButtonSpinner color="black" />
                       ) : (
                         <ButtonText
                           style={{ fontFamily: "Sen-Bold" }}
                           className="text-xl text-black"
-                        >Next</ButtonText>
+                        >
+                          {step === 2 ? 'Confirm' : 'Next'}
+                        </ButtonText>
                       )}
                     </Button>
                   ) : (
