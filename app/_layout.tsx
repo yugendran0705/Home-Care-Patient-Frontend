@@ -4,19 +4,22 @@ import { Stack } from 'expo-router';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import '@/global.css';
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  const [fontsLoaded] = useFonts({
+    'Sen-Regular': require('../assets/fonts/Sen-Regular.ttf'),
+    'Sen-Bold': require('../assets/fonts/Sen-Bold.ttf'),
   });
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+  if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    
+    <GluestackUIProvider mode={colorScheme === 'dark' ? 'dark' : 'light'}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         {/* This option will hide the header for all screens */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -27,5 +30,7 @@ export default function RootLayout() {
         <Stack.Screen name="address-form" options={{ headerShown: false }} />
     </Stack>
     </ThemeProvider>
+    </GluestackUIProvider>
+  
   );
 }
