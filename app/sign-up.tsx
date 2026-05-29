@@ -67,7 +67,7 @@ const SignUpScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const [, setIsFetchingLocation] = useState(false);
   // --- State for the Date Picker ---
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -122,7 +122,8 @@ const SignUpScreen = () => {
         let currentLocation = await Location.getCurrentPositionAsync({});
         handleAddressChange("latitude", currentLocation.coords.latitude);
         handleAddressChange("longitude", currentLocation.coords.longitude);
-      } catch (error) {
+      } catch (e: any) {
+        console.log(e);
         setError("Could not fetch location. Please select it on the map.");
         handleAddressChange("latitude", 13.0403);
         handleAddressChange("longitude", 80.2336);
@@ -133,7 +134,7 @@ const SignUpScreen = () => {
     if (step === 2) {
       getLocation();
     }
-  }, [step]);
+  }, [formData.address.latitude, formData.address.longitude, step]);
 
   // --- Handler for the Date Picker ---
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -199,15 +200,6 @@ const SignUpScreen = () => {
         );
         return;
       }
-    } else if (step === 3) {
-      if (
-        !formData.address.address_line_1 ||
-        !formData.address.city ||
-        !formData.address.pincode
-      ) {
-        setError("Please fill all required address fields.");
-        return;
-      }
     }
 
     setError("");
@@ -225,6 +217,15 @@ const SignUpScreen = () => {
   const handleSignUp = async () => {
     if (loading) return;
     setError("");
+
+    if (
+      !formData.address.address_line_1 ||
+      !formData.address.city ||
+      !formData.address.pincode
+    ) {
+      setError("Please fill all required address fields.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -282,11 +283,12 @@ const SignUpScreen = () => {
       }
       setStep(3); // Move to the form step
     } catch (e: any) {
-      console.warn(
-        "Registration error details: ",
-        e?.response?.data || e.message,
+      console.warn("Reverse geocoding error: ", e?.response?.data || e.message);
+      Alert.alert(
+        "Error",
+        "Could not determine address from location. Please enter it manually.",
       );
-      setError(e.response.data.detail);
+      setStep(3);
     } finally {
       setIsGeocoding(false);
     }
@@ -394,6 +396,7 @@ const SignUpScreen = () => {
             onChangeText={(text) => handleFormChange("email", text)}
             autoCapitalize="none"
             type="text"
+            keyboardType="email-address"
           />
         </Input>
       </FormControl>
@@ -491,7 +494,7 @@ const SignUpScreen = () => {
             style={{ fontFamily: "Sen-Regular", color: colors.text }}
             className="text-md"
           >
-            {formData.date_of_birth || "2000-00-00"}
+            {formData.date_of_birth || "Select date of birth"}
           </Text>
         </Box>
       </Pressable>
@@ -501,6 +504,7 @@ const SignUpScreen = () => {
           mode="date"
           display="default"
           onChange={onChangeDate}
+          maximumDate={new Date()}
         />
       )}
       <Text
@@ -751,10 +755,10 @@ const SignUpScreen = () => {
   const renderStepTwo = () => (
     <Box className="flex-1 min-h-[500px]">
       <Text
-        style={{ fontFamily: "Sen_Bold", color: colors.text }}
+        style={{ fontFamily: "Sen-Bold", color: colors.text }}
         className="text-2xl font-semibold mb-5 text-center"
       >
-        Step 3: Pin Your Location
+        Step 2: Pin Your Location
       </Text>
       <Box
         style={{
@@ -860,18 +864,6 @@ const SignUpScreen = () => {
               <View
                 className={`flex-row items-center justify-center mb-5 relative min-h-[50px] ${Platform.OS === "android" ? "mt-5" : "mt-0"}`}
               >
-                <View className="absolute left-0 z-10">
-                  <Pressable
-                    onPress={() =>
-                      step > 1 ? setStep((s) => s - 1) : router.back()
-                    }
-                    className="p-2 active:bg-transparent"
-                    accessibilityLabel="Go back"
-                  >
-                    <ArrowLeft size={25} color={colors.textInverted} />
-                  </Pressable>
-                </View>
-
                 <Text
                   className="text-[28px] text-center"
                   style={{ fontFamily: "Sen-Bold", color: "#fff" }}
@@ -916,7 +908,7 @@ const SignUpScreen = () => {
                     <Button
                       className={`h-[55px] rounded-[14px] items-center ${"w-[120px]"} active:opacity-70`}
                       style={actionButtonShadow}
-                      isDisabled={loading}
+                      isDisabled={loading || isGeocoding}
                       onPress={handleNextStep}
                       onPressIn={handleButtonPressIn}
                       onPressOut={handleButtonPressOut}

@@ -293,7 +293,7 @@ const ProfileScreen = () => {
                     >
                       <Icon
                         as={LocationEdit}
-                        style={{ color: colors.icon }}
+                        style={{ color: colors.text }}
                         className=" mt-1"
                       />
                       <Box className="flex-1 flex-row items-start justify-between">

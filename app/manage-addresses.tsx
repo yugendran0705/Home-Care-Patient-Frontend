@@ -114,7 +114,7 @@ const ManageAddressesScreen = () => {
         className="flex-1"
         style={{ backgroundColor: colors.background }}
       >
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
           <Box className="flex-row gap-4 items-center px-3 mt-5">
             <Pressable onPress={() => router.back()} className="ml-2">
               <Icon as={ArrowLeft} size="xl" color={colors.textInverted} />

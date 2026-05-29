@@ -504,7 +504,12 @@ const AddressFormScreen = () => {
         style={{ backgroundColor: colors.background }}
       >
         <Box className="flex-row gap-4 items-center px-3 mt-5">
-          <Pressable onPress={() => router.back()} className="ml-2">
+          <Pressable
+            onPress={() =>
+              step === 2 && !isEditMode ? setStep(1) : router.back()
+            }
+            className="ml-2"
+          >
             <Icon as={ArrowLeft} size="xl" />
           </Pressable>
           <Text

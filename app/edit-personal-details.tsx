@@ -106,7 +106,7 @@ const EditPersonalDetailsScreen = () => {
       !details?.last_name ||
       !details?.phone_number
     ) {
-      setError("Please enter any one of the fields!");
+      setError("Please fill in all fields.");
       return;
     }
     Alert.alert(
@@ -116,7 +116,7 @@ const EditPersonalDetailsScreen = () => {
         { text: "Cancel", style: "cancel" },
         {
           text: "Save",
-          style: "destructive",
+          style: "default",
 
           onPress: async () => {
             setLoading(true);
