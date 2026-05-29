@@ -1,24 +1,33 @@
-import { Link, router } from 'expo-router';
-import React, { useState, useEffect, useCallback } from 'react';
+import axiosInstance from "@/axiosInstance";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonIcon } from "@/components/ui/button";
+import { Divider } from "@/components/ui/divider";
+import { Icon } from "@/components/ui/icon";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link, router, useFocusEffect } from "expo-router";
+import {
+  CalendarDays,
+  Edit,
+  LocationEdit,
+  LogOut,
+  Mars,
+  Phone,
+  Venus,
+} from "lucide-react-native";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
+  Alert,
   Animated,
-  ScrollView,
+  Pressable,
   RefreshControl,
+  ScrollView,
   useColorScheme,
-} from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axiosInstance from '@/axiosInstance';
-import { Colors } from '../../constants/Colors';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { CalendarDays, Edit, LocationEdit, LogOut, Mars, Phone, Venus } from 'lucide-react-native';
-import { Divider } from '@/components/ui/divider';
-import { Icon } from "@/components/ui/icon";
-import { Button, ButtonIcon } from '@/components/ui/button';
+} from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Colors } from "../../constants/Colors";
 
 // --- TypeScript Interfaces ---
 interface User {
@@ -51,16 +60,14 @@ interface ProfileData {
   user: User;
 }
 
-
 const ProfileScreen = () => {
-
-  const colorScheme = useColorScheme() ?? 'light';
+  const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
@@ -68,8 +75,8 @@ const ProfileScreen = () => {
     try {
       // Fetch profile and addresses in parallel
       const [profileResponse, addressResponse] = await Promise.all([
-        axiosInstance.get('/patients/me'),
-        axiosInstance.get('/addresses/me'),
+        axiosInstance.get("/patients/me"),
+        axiosInstance.get("/addresses/me"),
       ]);
       setProfile(profileResponse.data);
       Animated.timing(fadeAnim, {
@@ -77,27 +84,38 @@ const ProfileScreen = () => {
         duration: 1000,
         useNativeDriver: true,
       }).start();
-      setAddresses(addressResponse.data);
-      setError(''); // Clear error on success
+      setAddresses([...addressResponse.data].reverse());
+      setError("");
     } catch (e: any) {
-      setError('Failed to fetch data. Please try again.');
+      setError("Failed to fetch data. Please try again.");
       console.error(e);
     }
-  }, []);
+  }, [fadeAnim]);
 
-  useEffect(() => {
-    const loadInitialData = async () => {
+  useFocusEffect(
+    useCallback(() => {
       setLoading(true);
-      await fetchData();
+      fetchData();
       setLoading(false);
-    };
-    loadInitialData();
-  }, [fetchData]);
+    }, [fetchData]),
+  );
 
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem('access_token');
-    await AsyncStorage.removeItem('refresh_token');
-    router.replace('/sign-in');
+  const handleLogout = () => {
+    Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await AsyncStorage.removeItem("access_token");
+          await AsyncStorage.removeItem("refresh_token");
+          router.replace("/sign-in");
+        },
+      },
+    ]);
   };
 
   const onRefresh = useCallback(async () => {
@@ -116,10 +134,20 @@ const ProfileScreen = () => {
 
   if (error || !profile) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <Text className="text-white text-center text-[16px] mb-[20px]">{error}</Text>
-        <Pressable onPress={() => router.replace('/sign-in')}>
-          <Text className="text-[16px] text-white font-medium">Go to Sign In</Text>
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <Text
+          className="text-center text-[16px] mb-[20px]"
+          style={{ color: colors.text }}
+        >
+          {error}
+        </Text>
+        <Pressable onPress={() => router.replace("/sign-in")}>
+          <Text className="text-[16px] medium" style={{ color: colors.text }}>
+            Go to Sign In
+          </Text>
         </Pressable>
       </Box>
     );
@@ -127,28 +155,54 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.primaryBackground }}>
+      <SafeAreaView
+        className="flex-1"
+        style={{ backgroundColor: colors.background }}
+      >
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 30 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#000']} // for Android
-              tintColor={'#fff'} // for iOS
+              colors={["#000"]} // for Android
+              tintColor={"#fff"} // for iOS
             />
           }
         >
           <Animated.View style={{ opacity: fadeAnim }}>
             <Box className="items-center mb-[30px]">
               <Box className="w-[100px] h-[100px] rounded-full bg-white/20 justify-center items-center mb-[15px] border-[3px] border-white">
-                <Text style={{ fontFamily: "Sen-Bold" }} className="text-white text-[40px]">{profile.first_name.charAt(0)}{profile.last_name.charAt(0)}</Text>
+                <Text
+                  style={{ fontFamily: "Sen-Bold" }}
+                  className="text-white text-[40px]"
+                >
+                  {profile.first_name.charAt(0)}
+                  {profile.last_name.charAt(0)}
+                </Text>
               </Box>
-              <Text style={{ fontFamily: "Sen-Bold" }} className="text-[26px] text-white">{profile.first_name} {profile.last_name}</Text>
-              <Text style={{ fontFamily: "Sen-Regular", color: colors.textMutedInverted }} className="text-[16px] text-white/80 mt-[4px]">{profile.user.email}</Text>
+              <Text
+                style={{ fontFamily: "Sen-Bold", color: colors.text }}
+                className="text-[26px] "
+              >
+                {profile.first_name} {profile.last_name}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "Sen-Regular",
+                  color: colors.textMutedInverted,
+                }}
+                className="text-[16px] text-white/80 mt-[4px]"
+              >
+                {profile.user.email}
+              </Text>
             </Box>
 
-            <VStack space="lg" style={{ backgroundColor: colors.surface }} className="rounded-[12px] p-6 mb-4">
+            <VStack
+              space="lg"
+              style={{ backgroundColor: colors.secondaryBackground }}
+              className="rounded-[12px] p-6 mb-4"
+            >
               <Box className="flex-row justify-between items-center mb-1">
                 <Text
                   style={{ fontFamily: "Sen-Bold", color: colors.text }}
@@ -158,39 +212,57 @@ const ProfileScreen = () => {
                 </Text>
                 <Link href="/edit-personal-details" asChild>
                   <Pressable>
-                    <Icon as={Edit} style={{ color: colors.accent }} size="lg" />
+                    <Icon as={Edit} style={{ color: colors.text }} size="lg" />
                   </Pressable>
                 </Link>
               </Box>
-              <Divider style={{ backgroundColor: colors.icon }} />
+              <Divider style={{ backgroundColor: colors.text }} />
               <Box className="flex-row items-center gap-4">
-                <Icon as={Phone} style={{ color: colors.icon }} />
-                <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-lg">
+                <Icon as={Phone} style={{ color: colors.text }} />
+                <Text
+                  style={{ fontFamily: "Sen-Regular", color: colors.text }}
+                  className="text-lg"
+                >
                   {profile.phone_number}
                 </Text>
               </Box>
 
-
               <Box className="flex-row items-center gap-4">
-                <Icon as={CalendarDays} style={{ color: colors.icon }} />
-                <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-lg">
+                <Icon as={CalendarDays} style={{ color: colors.text }} />
+                <Text
+                  style={{ fontFamily: "Sen-Regular", color: colors.text }}
+                  className="text-lg"
+                >
                   {profile.date_of_birth
                     ? (() => {
-                      const dob = new Date(profile.date_of_birth);
-                      return isNaN(dob.getTime()) ? "Not provided" : dob.toLocaleDateString();
-                    })()
-                    : "Not provided"}                </Text>
+                        const dob = new Date(profile.date_of_birth);
+                        return isNaN(dob.getTime())
+                          ? "Not provided"
+                          : dob.toLocaleDateString();
+                      })()
+                    : "Not provided"}{" "}
+                </Text>
               </Box>
 
               <Box className="flex-row items-center gap-4">
-                <Icon as={profile.gender === "Male" ? Mars : Venus} style={{ color: colors.icon }} />
-                <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-lg">
+                <Icon
+                  as={profile.gender === "Male" ? Mars : Venus}
+                  style={{ color: colors.text }}
+                />
+                <Text
+                  style={{ fontFamily: "Sen-Regular", color: colors.text }}
+                  className="text-lg"
+                >
                   {profile.gender}
                 </Text>
               </Box>
             </VStack>
 
-            <VStack space="lg" style={{ backgroundColor: colors.surface }} className="rounded-[12px] p-6 mb-4">
+            <VStack
+              space="lg"
+              style={{ backgroundColor: colors.secondaryBackground }}
+              className="rounded-[12px] p-6 mb-4"
+            >
               <Box className="flex-row justify-between items-center mb-1">
                 <Text
                   style={{ fontFamily: "Sen-Bold", color: colors.text }}
@@ -200,43 +272,78 @@ const ProfileScreen = () => {
                 </Text>
                 <Link href="/manage-addresses" asChild>
                   <Pressable>
-                    <Text style={{ fontFamily: "Sen-Regular", color: colors.accent }} className="text-[14px]">
-                      Manage
-                    </Text>
+                    <Icon as={Edit} style={{ color: colors.text }} size="lg" />
                   </Pressable>
                 </Link>
               </Box>
-              <Divider style={{ backgroundColor: colors.icon }} />
-
-              {addresses.map((addr) => (
-                <Box key={addr.id} className="flex-row items-start gap-4 mb-2">
-                  <Icon as={LocationEdit} style={{ color: colors.icon }} className=" mt-1" />
-                  <VStack className="flex-1">
-                    <Text style={{ fontFamily: "Sen-Regular", color: colors.text }} className="text-[16px]">
-                      {addr.address_line_1}, {addr.city}
-                    </Text>
-                    <Text style={{ fontFamily: "Sen-Regular", color: colors.textSecondary }} className="text-[14px]">
-                      {addr.pincode}
-                    </Text>
-                  </VStack>
-                  {addr.is_primary && (
-                    <Box style={{ backgroundColor: colors.success }} className="rounded-[10px] px-2 py-1">
-                      <Text style={{ fontFamily: "Sen-Bold" }} className="text-white text-[10px]">Primary</Text>
+              <Divider style={{ backgroundColor: colors.text }} />
+              <Box style={{ maxHeight: 250 }}>
+                <ScrollView
+                  // showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 12 }}
+                  nestedScrollEnabled
+                >
+                  {addresses.map((addr) => (
+                    <Box
+                      key={addr.id}
+                      className="flex-row items-start gap-4 p-2 rounded-lg"
+                      style={{
+                        backgroundColor: colors.secondaryBackgroundGradient,
+                      }}
+                    >
+                      <Icon
+                        as={LocationEdit}
+                        style={{ color: colors.icon }}
+                        className=" mt-1"
+                      />
+                      <Box className="flex-1 flex-row items-start justify-between">
+                        <Text
+                          style={{
+                            fontFamily: "Sen-Regular",
+                            color: colors.text,
+                          }}
+                          className="text-lg"
+                        >
+                          {addr.address_line_1
+                            ? `${addr.address_line_1},\n`
+                            : ""}
+                          {addr.city},{"\n"}
+                          {addr.state},{"\n"}
+                          {addr.pincode}.
+                        </Text>
+                        {addr.is_primary && (
+                          <Box
+                            style={{ backgroundColor: colors.success }}
+                            className="rounded-[10px] px-2 py-1"
+                          >
+                            <Text
+                              style={{ fontFamily: "Sen-Bold" }}
+                              className="text-white text-[10px]"
+                            >
+                              Primary
+                            </Text>
+                          </Box>
+                        )}
+                      </Box>
                     </Box>
-                  )}
-                </Box>
-              ))}
+                  ))}
+                </ScrollView>
+              </Box>
             </VStack>
 
             <Button
-              className="py-4 rounded-xl h-15 mt-6 mb-10"
+              className="py-4 rounded-xl h-15 mt-6 mb-10 active:opacity-70"
               onPress={handleLogout}
               style={{ backgroundColor: colors.error }}
             >
-              <ButtonIcon as={LogOut} className="text-white mr-2" />
+              <ButtonIcon
+                as={LogOut}
+                className=" mr-2"
+                style={{ color: colors.text }}
+              />
               <Text
-                style={{ fontFamily: "Sen-Bold" }}
-                className="text-white text-[18px]"
+                style={{ fontFamily: "Sen-Bold", color: colors.text }}
+                className=" text-[18px]"
               >
                 Log Out
               </Text>
