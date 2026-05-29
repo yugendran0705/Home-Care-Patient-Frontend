@@ -1,39 +1,37 @@
-import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import data from "@/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import axios from "axios";
+import * as Location from "expo-location";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
-  KeyboardAvoidingView,
   ScrollView,
-  StyleSheet,
   View,
-} from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import axios from 'axios';
-import MapView, { Marker } from 'react-native-maps';
-import * as Location from 'expo-location';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import data from '@/config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+  useColorScheme,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { Box } from "@/components/ui/box";
-import { Button, ButtonIcon, ButtonSpinner, ButtonText } from "@/components/ui/button";
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
 import { EyeIcon, EyeOffIcon } from "@/components/ui/icon";
-import {
-  Input,
-  InputField,
-  InputIcon,
-  InputSlot,
-} from "@/components/ui/input";
+import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { ArrowLeft, Mars, Venus } from "lucide-react-native";
+import { Colors } from "@/constants/Colors";
+import { ArrowLeft, ArrowRight, Mars, Venus } from "lucide-react-native";
 import Animated, {
   Easing,
   FadeInRight,
@@ -42,24 +40,22 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { useColorScheme } from 'react-native';
-import { Colors } from '@/constants/Colors';
 
 const initialFormData = {
-  email: '',
-  password: '',
-  first_name: '',
-  last_name: '',
-  phone_number: '',
-  date_of_birth: '',
-  gender: '',
+  email: "",
+  password: "",
+  first_name: "",
+  last_name: "",
+  phone_number: "",
+  date_of_birth: "",
+  gender: "",
   address: {
-    address_line_1: '',
-    address_line_2: '',
-    city: '',
-    state: '',
-    pincode: '',
-    country: 'India',
+    address_line_1: "",
+    address_line_2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    country: "India",
     latitude: 13.0403,
     longitude: 80.2336,
   },
@@ -69,7 +65,7 @@ const SignUpScreen = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   // --- State for the Date Picker ---
@@ -77,7 +73,7 @@ const SignUpScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  const colorScheme = useColorScheme() ?? 'light';
+  const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
 
   const scale = useSharedValue(1);
@@ -93,6 +89,7 @@ const SignUpScreen = () => {
   };
 
   const actionButtonShadow = {
+    backgroundColor: colors.secondaryBackgroundGradient,
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -102,26 +99,30 @@ const SignUpScreen = () => {
 
   useEffect(() => {
     const getLocation = async () => {
+      if (
+        formData.address.latitude !== 13.0403 ||
+        formData.address.longitude !== 80.2336
+      ) {
+        return;
+      }
       setIsFetchingLocation(true);
-      if (formData.address.latitude !== 13.0403 || formData.address.longitude !== 80.2336) {
-      return; 
-    }
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setError('Permission to access location was denied');
-        handleAddressChange('latitude', 13.0403);
-        handleAddressChange('longitude', 80.2336);
+      if (status !== "granted") {
+        setError("Permission to access location was denied");
+        handleAddressChange("latitude", 13.0403);
+        handleAddressChange("longitude", 80.2336);
         setIsFetchingLocation(false);
         return;
       }
       try {
         let currentLocation = await Location.getCurrentPositionAsync({});
-        handleAddressChange('latitude', currentLocation.coords.latitude);
-        handleAddressChange('longitude', currentLocation.coords.longitude);
-      } catch (error) {
+        handleAddressChange("latitude", currentLocation.coords.latitude);
+        handleAddressChange("longitude", currentLocation.coords.longitude);
+      } catch (e: any) {
+        console.log(e);
         setError("Could not fetch location. Please select it on the map.");
-        handleAddressChange('latitude', 13.0403);
-        handleAddressChange('longitude', 80.2336);
+        handleAddressChange("latitude", 13.0403);
+        handleAddressChange("longitude", 80.2336);
       } finally {
         setIsFetchingLocation(false);
       }
@@ -129,30 +130,33 @@ const SignUpScreen = () => {
     if (step === 2) {
       getLocation();
     }
-  }, [step]);
+  }, [formData.address.latitude, formData.address.longitude, step]);
 
   // --- Handler for the Date Picker ---
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios'); // On iOS, the picker can be persistent
+    setShowDatePicker(Platform.OS === "ios"); // On iOS, the picker can be persistent
     if (selectedDate) {
       const currentDate = selectedDate || date;
       setDate(currentDate);
 
       // Format the date to YYYY-MM-DD for the API
       let tempDate = new Date(currentDate);
-      let fDate = `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1).toString().padStart(2, '0')}-${tempDate.getDate().toString().padStart(2, '0')}`;
-      handleFormChange('date_of_birth', fDate);
+      let fDate = `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1).toString().padStart(2, "0")}-${tempDate.getDate().toString().padStart(2, "0")}`;
+      handleFormChange("date_of_birth", fDate);
     }
   };
 
   const handleAddressChange = (field: string, value: string | number) => {
-    setError('');
-    setFormData(prev => ({ ...prev, address: { ...prev.address, [field]: value } }));
+    setError("");
+    setFormData((prev) => ({
+      ...prev,
+      address: { ...prev.address, [field]: value },
+    }));
   };
 
   const handleFormChange = (field: string, value: string) => {
-    setError('');
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setError("");
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const validateEmail = (email: string) => {
@@ -166,8 +170,20 @@ const SignUpScreen = () => {
   const handleNextStep = () => {
     scale.value = withSpring(1);
     if (step === 1) {
-      if (!formData.email || !formData.password || !formData.first_name || !formData.last_name || !formData.date_of_birth || !formData.phone_number || !formData.gender) {
-        setError('Please fill all required fields.');
+      if (
+        !formData.email ||
+        !formData.password ||
+        !formData.first_name ||
+        !formData.last_name ||
+        !formData.date_of_birth ||
+        !formData.phone_number ||
+        !formData.gender
+      ) {
+        setError("Please fill all required fields.");
+        return;
+      }
+      if (formData.phone_number.length !== 10) {
+        setError("Phone number must be 10 digits.");
         return;
       }
       if (!validateEmail(formData.email)) {
@@ -182,16 +198,29 @@ const SignUpScreen = () => {
       }
     }
 
-    setError('');
-    setStep(prev => prev + 1);
+    setError("");
+    setStep((prev) => prev + 1);
+  };
+
+  const handlePrevStep = () => {
+    setError("");
+    if (step > 1) {
+      setStep((s) => s - 1);
+    } else {
+      router.back();
+    }
   };
 
   const handleSignUp = async () => {
     if (loading) return;
-    setError('');
+    setError("");
 
-    if (!formData.address.address_line_1 || !formData.address.city || !formData.address.pincode) {
-      setError('Please fill all required address fields.');
+    if (
+      !formData.address.address_line_1 ||
+      !formData.address.city ||
+      !formData.address.pincode
+    ) {
+      setError("Please fill all required address fields.");
       return;
     }
 
@@ -199,17 +228,26 @@ const SignUpScreen = () => {
     try {
       const response = await axios.post(`${data.apiUrl}/patients/`, formData);
       const { access_token, refresh_token } = response.data;
-      // Securely store the tokens
-      await AsyncStorage.setItem('access_token', JSON.stringify({ access_token }));
-      await AsyncStorage.setItem('refresh_token', JSON.stringify({ refresh_token }));
+      await AsyncStorage.setItem(
+        "access_token",
+        JSON.stringify({ access_token }),
+      );
+      await AsyncStorage.setItem(
+        "refresh_token",
+        JSON.stringify({ refresh_token }),
+      );
 
-      Alert.alert('Success!', 'Your account has been created. Please sign in.', [
-        { text: 'OK', onPress: () => router.push('/(tabs)/profile') },
-      ]);
+      Alert.alert(
+        "Success!",
+        "Your account has been created. Please sign in.",
+        [{ text: "OK", onPress: () => router.push("/(tabs)/profile") }],
+      );
     } catch (e: any) {
-      const errorMessage = e.response ? e.response.data.message : 'Registration failed. Please try again.';
+      const errorMessage = e.response
+        ? e.response.data.detail
+        : "Registration failed. Please try again.";
       setError(errorMessage);
-      console.error(e);
+      // console.error(e);
     } finally {
       setLoading(false);
     }
@@ -227,22 +265,27 @@ const SignUpScreen = () => {
 
       if (geocoded.length > 0) {
         const geo = geocoded[0];
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           address: {
             ...prev.address,
-            address_line_1: `${geo.streetNumber || ''} ${geo.street || ''}`.trim(),
-            city: geo.city || '',
-            state: geo.region || '',
-            pincode: geo.postalCode || '',
-            country: geo.country || 'India',
+            address_line_1:
+              `${geo.streetNumber || ""} ${geo.street || ""}`.trim(),
+            city: geo.city || "",
+            state: geo.region || "",
+            pincode: geo.postalCode || "",
+            country: geo.country || "India",
           },
         }));
       }
       setStep(3); // Move to the form step
-    } catch (error) {
-      Alert.alert('Error', 'Could not determine address from location. Please enter it manually.');
-      setStep(3); // Still move to form so user can enter manually
+    } catch (e: any) {
+      console.warn("Reverse geocoding error: ", e?.response?.data || e.message);
+      Alert.alert(
+        "Error",
+        "Could not determine address from location. Please enter it manually.",
+      );
+      setStep(3);
     } finally {
       setIsGeocoding(false);
     }
@@ -251,14 +294,16 @@ const SignUpScreen = () => {
   const renderStepOne = () => (
     <>
       <Text
-        className="text-2xl font-semibold text-center mb-5 text-white" style={{ fontFamily: "Sen-Bold" }}>
+        style={{ fontFamily: "Sen-Bold", color: colors.text }}
+        className="text-2xl font-semibold  mb-5 text-center"
+      >
         Step 1: Personal Details
       </Text>
-
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            className="text-md uppercase font-Sen-Regular"
           >
             First Name
           </FormControlLabelText>
@@ -270,23 +315,27 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
-          className="my-1 rounded-xl h-16  pl-2 border-0"
+          className="my-1 rounded-xl h-16 pl-2 border-0"
           size="md"
         >
           <InputField
-            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
-            placeholder="Your first name"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            placeholder="eg: Dhruva"
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
             value={formData.first_name}
-            onChangeText={v => handleFormChange('first_name', v)} />
+            onChangeText={(text) => handleFormChange("first_name", text)}
+            type="text"
+          />
         </Input>
       </FormControl>
-
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            className="text-md uppercase font-Sen-Regular"
           >
             Last Name
           </FormControlLabelText>
@@ -298,25 +347,29 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
           className="my-1 rounded-xl h-16  pl-2 border-0"
           size="md"
         >
           <InputField
-            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
-            placeholder="Your last name"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            placeholder="eg: U R"
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
             value={formData.last_name}
-            onChangeText={v => handleFormChange('last_name', v)} />
+            onChangeText={(text) => handleFormChange("last_name", text)}
+            type="text"
+          />
         </Input>
       </FormControl>
-
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            className="text-md uppercase font-Sen-Regular"
           >
-            Email Address
+            Email
           </FormControlLabelText>
         </FormControlLabel>
         <Input
@@ -326,25 +379,29 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
-          className="my-1 rounded-xl h-16  pl-2 border-0"
+          className="my-1 rounded-xl h-16 pl-2 border-0"
           size="md"
         >
           <InputField
-            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
-            placeholder="Email Address"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            placeholder="eg: example@gmail.com"
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
             value={formData.email}
-            onChangeText={v => handleFormChange('email', v)}
+            onChangeText={(text) => handleFormChange("email", text)}
+            autoCapitalize="none"
+            type="text"
             keyboardType="email-address"
-            autoCapitalize="none" />
+          />
         </Input>
       </FormControl>
-
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            className="text-md uppercase font-Sen-Regular"
           >
             Password
           </FormControlLabelText>
@@ -356,27 +413,34 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
-          className="my-1 rounded-xl h-16  pl-2 pr-4 border-0"
+          className="my-1 rounded-xl h-16 pl-2 pr-4 border-0"
           size="md"
         >
           <InputField
-            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            // type={isPasswordVisible ? "text" : "password"}
             secureTextEntry={!isPasswordVisible}
-            placeholder="********"
+            placeholder="eg: ********"
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
             value={formData.password}
-            onChangeText={v => handleFormChange('password', v)} />
+            onChangeText={(text) => handleFormChange("password", text)}
+          />
           <InputSlot onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-            <InputIcon as={isPasswordVisible ? EyeIcon : EyeOffIcon} color={colors.icon} />
+            <InputIcon
+              color={colors.text}
+              as={isPasswordVisible ? EyeIcon : EyeOffIcon}
+            />
           </InputSlot>
         </Input>
       </FormControl>
-
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            className="text-md uppercase font-Sen-Regular"
           >
             Phone
           </FormControlLabelText>
@@ -388,26 +452,28 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
-          className="my-1 rounded-xl h-16  pl-2 border-0"
+          className="my-1 rounded-xl h-16 pl-2 border-0"
           size="md"
         >
           <InputField
-            style={{ color: colors.text, fontFamily: "Sen-Regular" }}
-            placeholder="Your phone number"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            placeholder="eg: 9876543210"
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
             value={formData.phone_number}
-            onChangeText={v => handleFormChange('phone_number', v)}
-            maxLength={10}
-            keyboardType="phone-pad" />
+            onChangeText={(text) => handleFormChange("phone_number", text)}
+            keyboardType="phone-pad"
+            type="text"
+          />
         </Input>
       </FormControl>
 
-      {/* Date of Birth Picker */}
       <Pressable onPress={() => setShowDatePicker(true)}>
         <Text
-          style={{ fontFamily: "Sen-Regular", color: colors.textInverted }}
-          className="text-md uppercase mb-2"
+          style={{ fontFamily: "Sen-Regular", color: colors.text }}
+          className="text-md uppercase font-Sen-Regular mb-2"
         >
           Date of birth
         </Text>
@@ -418,63 +484,62 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
-          className="h-16  rounded-[14px] px-[15px] mb-[15px] mt-1 justify-center"
+          className="h-16 rounded-[14px] px-[15px] mb-[15px] mt-1 justify-center"
         >
           <Text
-            style={{ fontFamily: "Sen-Regular", color: colors.textSecondary }}
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
+            className="text-md"
           >
-            {formData.date_of_birth || "Select Date of Birth"}
+            {formData.date_of_birth || "Select date of birth"}
           </Text>
         </Box>
       </Pressable>
       {showDatePicker && (
         <DateTimePicker
-          testID="dateTimePicker"
           value={date}
-          mode={'date'}
+          mode="date"
           display="default"
           onChange={onChangeDate}
           maximumDate={new Date()}
         />
       )}
       <Text
-        style={{ fontFamily: "Sen-Regular" }}
-        className="text-white text-md uppercase mb-2"
+        style={{ fontFamily: "Sen-Regular", color: colors.text }}
+        className="text-md uppercase font-Sen-Regular mb-2"
       >
         Gender
       </Text>
-      <Box className="flex-row justify-between gap-4 mb-4">
+      <Box className="flex-row justify-between gap-4 mb-[15px]">
         {["Male", "Female"].map((g) => {
           const isActive = formData.gender === g;
 
           return (
-            <Box
+            <Button
               key={g}
-              className={`flex-1 rounded-[16px] p-[3px]`}
+              onPress={() => handleFormChange("gender", g)}
+              className={`h-16 flex-1 rounded-xl flex-row items-center justify-center bg-transparent border border-white/50`}
+              variant="solid"
+              style={{
+                backgroundColor: !isActive
+                  ? colors.background
+                  : colors.secondaryBackground,
+              }}
             >
-              <Button
-                onPress={() => handleFormChange('gender', g)}
-                className={`h-[50px] rounded-[14px] flex-row items-center justify-center ${isActive ? "bg-white/50" : ""
-                  }`}
-                variant="solid"
-              >
-                <ButtonIcon
-                  as={g === "Male" ? Mars : Venus}
-                  className={`mr-[8px] ${isActive ? "text-black" : "text-black/70"
-                    }`}
-                />
+              <ButtonIcon
+                as={g === "Male" ? Mars : Venus}
+                className={`mr-2 `}
+                style={{ color: colors.text }}
+              />
 
-                <ButtonText
-                  style={{ fontFamily: "Sen-Regular" }}
-                  className={`text-[16px] font-medium ${isActive ? "text-black" : "text-black/70"
-                    }`}
-                >
-                  {g}
-                </ButtonText>
-              </Button>
-            </Box>
+              <ButtonText
+                style={{ fontFamily: "Sen-Regular", color: colors.text }}
+                className={`text-[16px] font-medium `}
+              >
+                {g}
+              </ButtonText>
+            </Button>
           );
         })}
       </Box>
@@ -484,14 +549,16 @@ const SignUpScreen = () => {
   const renderStepThree = () => (
     <>
       <Text
-        style={{ fontFamily: "Sen-Bold" }}
-        className="text-2xl font-semibold text-white mb-5 text-center"
+        style={{ fontFamily: "Sen-Bold", color: colors.text }}
+        className="text-2xl font-semibold mb-5 text-center"
       >
-        Step 3: Address</Text>
+        Step 3: Address
+      </Text>
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            className="text-md uppercase"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
           >
             Address Line 1
           </FormControlLabelText>
@@ -503,7 +570,7 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
           className="my-1 rounded-xl h-16  pl-2 border-0"
           size="md"
@@ -512,7 +579,9 @@ const SignUpScreen = () => {
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
             placeholder="Address Line 1"
             value={formData.address.address_line_1}
-            onChangeText={v => handleAddressChange('address_line_1', v)}
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
+            onChangeText={(v) => handleAddressChange("address_line_1", v)}
           />
         </Input>
       </FormControl>
@@ -520,7 +589,8 @@ const SignUpScreen = () => {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            className="text-md uppercase "
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
           >
             Address Line 2 (Optional)
           </FormControlLabelText>
@@ -532,7 +602,7 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
           className="my-1 rounded-xl h-16  pl-2 border-0"
           size="md"
@@ -541,7 +611,9 @@ const SignUpScreen = () => {
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
             placeholder="Address Line 2"
             value={formData.address.address_line_2}
-            onChangeText={v => handleAddressChange('address_line_2', v)}
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
+            onChangeText={(v) => handleAddressChange("address_line_2", v)}
           />
         </Input>
       </FormControl>
@@ -549,7 +621,8 @@ const SignUpScreen = () => {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            className="text-md uppercase"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
           >
             City
           </FormControlLabelText>
@@ -561,7 +634,7 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
           className="my-1 rounded-xl h-16  pl-2 border-0"
           size="md"
@@ -570,7 +643,9 @@ const SignUpScreen = () => {
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
             placeholder="City"
             value={formData.address.city}
-            onChangeText={v => handleAddressChange('city', v)}
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
+            onChangeText={(v) => handleAddressChange("city", v)}
           />
         </Input>
       </FormControl>
@@ -578,7 +653,8 @@ const SignUpScreen = () => {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            className="text-md uppercase"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
           >
             State
           </FormControlLabelText>
@@ -590,7 +666,7 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
           className="my-1 rounded-xl h-16  pl-2 border-0"
           size="md"
@@ -599,7 +675,9 @@ const SignUpScreen = () => {
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
             placeholder="State"
             value={formData.address.state}
-            onChangeText={v => handleAddressChange('state', v)}
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
+            onChangeText={(v) => handleAddressChange("state", v)}
           />
         </Input>
       </FormControl>
@@ -607,7 +685,8 @@ const SignUpScreen = () => {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            className="text-md uppercase "
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
           >
             Pincode
           </FormControlLabelText>
@@ -619,7 +698,7 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
           className="my-1 rounded-xl h-16  pl-2 border-0"
           size="md"
@@ -629,7 +708,10 @@ const SignUpScreen = () => {
             placeholder="Pincode"
             value={formData.address.pincode}
             maxLength={6}
-            onChangeText={v => handleAddressChange('pincode', v)} keyboardType="number-pad"
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
+            onChangeText={(v) => handleAddressChange("pincode", v)}
+            keyboardType="number-pad"
           />
         </Input>
       </FormControl>
@@ -637,7 +719,8 @@ const SignUpScreen = () => {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            className="text-md uppercase text-white" style={{ fontFamily: "Sen-Regular" }}
+            className="text-md uppercase"
+            style={{ fontFamily: "Sen-Regular", color: colors.text }}
           >
             Country
           </FormControlLabelText>
@@ -649,7 +732,7 @@ const SignUpScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.35,
             shadowRadius: 4,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.secondaryBackground,
           }}
           className="my-1 rounded-xl h-16  pl-2 border-0"
           size="md"
@@ -657,90 +740,112 @@ const SignUpScreen = () => {
           <InputField
             style={{ color: colors.text, fontFamily: "Sen-Regular" }}
             placeholder="Country"
+            placeholderTextColor={colors.textSecondary}
+            cursorColor={colors.textSecondary}
             value={formData.address.country}
-            onChangeText={v => handleAddressChange('country', v)}
+            onChangeText={(v) => handleAddressChange("country", v)}
           />
         </Input>
       </FormControl>
-
-
     </>
   );
 
   const renderStepTwo = () => (
-    <Box className='flex-1 min-h-[500px]'>
+    <Box className="flex-1 min-h-[500px]">
       <Text
-        style={{ fontFamily: "Sen-Bold" }}
-        className="text-2xl font-semibold text-white mb-1 text-center"
+        style={{ fontFamily: "Sen-Bold", color: colors.text }}
+        className="text-2xl font-semibold mb-5 text-center"
       >
         Step 2: Pin Your Location
       </Text>
-      <Text
-        style={{ fontFamily: "Sen-Regular" }}
-        className="text-lg text-white/70 text-center mb-8"
-      >
-        Drag the pin to your exact address
-      </Text>
-      {isFetchingLocation ? <ActivityIndicator size="large" color="#fff" /> :
-        <Box
-          style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.surface,
-          }}
-          className="flex-1 rounded-[14px] overflow-hidden  justify-center items-center mb-5"
-        >
-          <MapView
-            style={StyleSheet.absoluteFillObject}
-            region={{
-              latitude: Number(formData.address.latitude),
-              longitude: Number(formData.address.longitude),
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-            onPress={(e) => {
-              // let user drop pin by tapping the map
-              handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
-              handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
-            }}
-          >
-            <Marker
-              draggable
-              coordinate={{ latitude: Number(formData.address.latitude), longitude: Number(formData.address.longitude) }}
-              onDragEnd={(e) => {
-                handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
-                handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
-              }}
-            />
-          </MapView>
-        </Box>
-      }
-      {/* <Button
-        onPress={handleConfirmLocation} disabled={isGeocoding}
+      <Box
         style={{
           elevation: 5,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.35,
           shadowRadius: 4,
+          backgroundColor: colors.secondaryBackground,
         }}
-        isDisabled={isFetchingLocation}
-        className="bg-white h-16 rounded-[14px] w-full items-center shadow-lg"
+        className="flex-1 rounded-[14px] overflow-hidden justify-center items-center mb-5"
       >
-        {isGeocoding ? <ActivityIndicator color="#192f6a" /> : <ButtonText
-          style={{ fontFamily: "Sen-Bold" }}
-          className="text-xl"
-        >Confirm</ButtonText>}
-      </Button> */}
+        <MapView
+          style={{ width: "100%", height: "100%" }}
+          region={{
+            latitude: formData.address.latitude,
+            longitude: formData.address.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+          onPress={(e) => {
+            // let user drop pin by tapping the map
+            handleAddressChange("latitude", e.nativeEvent.coordinate.latitude);
+            handleAddressChange(
+              "longitude",
+              e.nativeEvent.coordinate.longitude,
+            );
+          }}
+        >
+          <Marker
+            draggable
+            coordinate={{
+              latitude: formData.address.latitude,
+              longitude: formData.address.longitude,
+            }}
+            onDragEnd={(e) => {
+              handleAddressChange(
+                "latitude",
+                e.nativeEvent.coordinate.latitude,
+              );
+              handleAddressChange(
+                "longitude",
+                e.nativeEvent.coordinate.longitude,
+              );
+            }}
+          />
+        </MapView>
+        {(isFetchingLocation || isGeocoding) && (
+          <Box
+            className="absolute inset-0 items-center justify-center "
+            style={{ backgroundColor: colors.secondaryBackground }}
+          >
+            <ActivityIndicator size="large" color={colors.text} />
+          </Box>
+        )}
+      </Box>
+      <Button
+        style={{
+          elevation: 5,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.35,
+          shadowRadius: 4,
+          backgroundColor: colors.secondaryBackgroundGradient,
+        }}
+        className="h-[55px] rounded-[14px] items-center justify-center mt-[10px]"
+        onPress={handleConfirmLocation}
+        isDisabled={isFetchingLocation || isGeocoding}
+      >
+        {isGeocoding ? (
+          <ActivityIndicator color={colors.text} />
+        ) : (
+          <Text
+            style={{ fontFamily: "Sen-Bold", color: colors.text }}
+            className="text-[18px]"
+          >
+            Confirm Location
+          </Text>
+        )}
+      </Button>
     </Box>
   );
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ backgroundColor: colors.primaryBackground }} className="flex-1 h-full">
+      <SafeAreaView
+        style={{ backgroundColor: colors.background }}
+        className="flex-1 h-full"
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
@@ -763,21 +868,11 @@ const SignUpScreen = () => {
               exiting={FadeOutLeft.duration(200).easing(Easing.in(Easing.exp))}
             >
               <View
-                className={`flex-row items-center justify-center mb-5 relative min-h-[50px] ${Platform.OS === 'android' ? 'mt-5' : 'mt-0'}`}
+                className={`flex-row items-center justify-center mb-5 relative min-h-[50px] ${Platform.OS === "android" ? "mt-5" : "mt-0"}`}
               >
-                <View className="absolute left-0 z-10">
-                  <Pressable
-                    onPress={() => step > 1 ? setStep(s => s - 1) : router.back()}
-                    className="p-2 active:bg-transparent"
-                    accessibilityLabel="Go back"
-                  >
-                    <ArrowLeft size={25} color={colors.textInverted} />
-                  </Pressable>
-                </View>
-
                 <Text
                   className="text-[28px] text-center"
-                  style={{ fontFamily: "Sen-Bold", color: '#fff' }}
+                  style={{ fontFamily: "Sen-Bold", color: "#fff" }}
                 >
                   Create Account
                 </Text>
@@ -797,35 +892,60 @@ const SignUpScreen = () => {
                   </Text>
                 </Box>
               ) : null}
-              <Animated.View className="w-full" style={buttonAnimatedStyle}>
-                <Box className="mt-4 w-full">
+
+              <Animated.View className="mt-5" style={buttonAnimatedStyle}>
+                <Box className="flex-row justify-center gap-10">
+                  <Button
+                    className="h-[55px] w-[120px] rounded-[14px] items-center active:opacity-70"
+                    style={actionButtonShadow}
+                    onPress={handlePrevStep}
+                    onPressIn={handleButtonPressIn}
+                    onPressOut={handleButtonPressOut}
+                  >
+                    <ButtonIcon color={colors.text} as={ArrowLeft} />
+                    <ButtonText
+                      style={{ fontFamily: "Sen-Bold", color: colors.text }}
+                      size="xl"
+                    >
+                      Prev
+                    </ButtonText>
+                  </Button>
                   {step < 3 ? (
                     <Button
-                      onPress={step === 2 ? handleConfirmLocation : handleNextStep}
-                      className="bg-white h-16 rounded-[14px] items-center shadow-lg"
+                      className="h-[55px] rounded-[14px] items-center w-[120px] active:opacity-70"
+                      style={actionButtonShadow}
+                      isDisabled={loading || isGeocoding}
+                      onPress={handleNextStep}
                       onPressIn={handleButtonPressIn}
                       onPressOut={handleButtonPressOut}
-                      style={actionButtonShadow}
-                      isDisabled={loading || isGeocoding || isFetchingLocation}>
-                      {(loading || isGeocoding) ? (
-                        <ButtonSpinner color="black" />
-                      ) : (
-                        <ButtonText
-                          style={{ fontFamily: "Sen-Bold" }}
-                          className="text-xl text-black"
-                        >
-                          {step === 2 ? 'Confirm' : 'Next'}
-                        </ButtonText>
-                      )}
+                    >
+                      <ButtonText
+                        style={{ fontFamily: "Sen-Bold", color: colors.text }}
+                        size="xl"
+                      >
+                        Next
+                      </ButtonText>
+                      <ButtonIcon color={colors.text} as={ArrowRight} />
                     </Button>
                   ) : (
                     <Button
-                      className="bg-white h-16 rounded-[14px] w-full items-center shadow-lg"
+                      className=" h-[55px] w-[120px] rounded-[14px] items-center active:opacity-70"
+                      style={actionButtonShadow}
+                      isDisabled={loading}
+                      onPress={handleSignUp}
                       onPressIn={handleButtonPressIn}
                       onPressOut={handleButtonPressOut}
-                      style={actionButtonShadow}
-                      onPress={handleSignUp} isDisabled={loading}>
-                      {loading ? <ButtonSpinner color="black" /> : <ButtonText style={{ fontFamily: "Sen-Bold" }} className="text-black text-xl">Sign Up</ButtonText>}
+                    >
+                      {loading ? (
+                        <ActivityIndicator color={colors.text} />
+                      ) : (
+                        <ButtonText
+                          style={{ fontFamily: "Sen-Bold", color: colors.text }}
+                          className="text-xl"
+                        >
+                          Sign Up
+                        </ButtonText>
+                      )}
                     </Button>
                   )}
                 </Box>
