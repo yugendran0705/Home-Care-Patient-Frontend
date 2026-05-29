@@ -98,10 +98,6 @@ const SignUpScreen = () => {
   };
 
   useEffect(() => {
-    if (step === 0) {
-      router.back();
-    }
-
     const getLocation = async () => {
       if (
         formData.address.latitude !== 13.0403 ||
@@ -213,8 +209,6 @@ const SignUpScreen = () => {
     } else {
       router.back();
     }
-    setError("");
-    return;
   };
 
   const handleSignUp = async () => {
@@ -943,7 +937,7 @@ const SignUpScreen = () => {
                       onPressOut={handleButtonPressOut}
                     >
                       {loading ? (
-                        <ActivityIndicator color="#192f6a" />
+                        <ActivityIndicator color={colors.text} />
                       ) : (
                         <ButtonText
                           style={{ fontFamily: "Sen-Bold", color: colors.text }}
