@@ -76,7 +76,10 @@ const EditPersonalDetailsScreen = () => {
           useNativeDriver: true,
         }).start();
       } catch (e: any) {
-        Alert.alert("Error", e?.response?.data.detail);
+        Alert.alert(
+          "Error",
+          e?.response?.data?.detail ?? "Could not fetch your details.",
+        );
         router.back();
       } finally {
         setLoading(false);
@@ -125,7 +128,11 @@ const EditPersonalDetailsScreen = () => {
               Alert.alert("Success", "Your details have been updated.");
               router.back();
             } catch (error: any) {
-              Alert.alert("Error", error.response.data.detail);
+              Alert.alert(
+                "Error",
+                error?.response?.data?.detail ??
+                  "Could not update your details.",
+              );
             } finally {
               setLoading(false);
             }

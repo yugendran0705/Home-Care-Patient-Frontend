@@ -67,7 +67,7 @@ const SignUpScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [, setIsFetchingLocation] = useState(false);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   // --- State for the Date Picker ---
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -103,13 +103,13 @@ const SignUpScreen = () => {
     }
 
     const getLocation = async () => {
-      setIsFetchingLocation(true);
       if (
         formData.address.latitude !== 13.0403 ||
         formData.address.longitude !== 80.2336
       ) {
         return;
       }
+      setIsFetchingLocation(true);
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         setError("Permission to access location was denied");
@@ -207,8 +207,11 @@ const SignUpScreen = () => {
   };
 
   const handlePrevStep = () => {
-    if (step !== 0) {
+    setError("");
+    if (step > 1) {
       setStep((s) => s - 1);
+    } else {
+      router.back();
     }
     setError("");
     return;
@@ -423,7 +426,8 @@ const SignUpScreen = () => {
         >
           <InputField
             style={{ fontFamily: "Sen-Regular", color: colors.text }}
-            type={isPasswordVisible ? "text" : "password"}
+            // type={isPasswordVisible ? "text" : "password"}
+            secureTextEntry={!isPasswordVisible}
             placeholder="eg: ********"
             placeholderTextColor={colors.textSecondary}
             cursorColor={colors.textSecondary}
@@ -779,6 +783,14 @@ const SignUpScreen = () => {
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           }}
+          onPress={(e) => {
+            // let user drop pin by tapping the map
+            handleAddressChange("latitude", e.nativeEvent.coordinate.latitude);
+            handleAddressChange(
+              "longitude",
+              e.nativeEvent.coordinate.longitude,
+            );
+          }}
         >
           <Marker
             draggable
@@ -798,7 +810,7 @@ const SignUpScreen = () => {
             }}
           />
         </MapView>
-        {loading && (
+        {(isFetchingLocation || isGeocoding) && (
           <Box
             className="absolute inset-0 items-center justify-center "
             style={{ backgroundColor: colors.secondaryBackground }}
@@ -818,7 +830,7 @@ const SignUpScreen = () => {
         }}
         className="h-[55px] rounded-[14px] items-center justify-center mt-[10px]"
         onPress={handleConfirmLocation}
-        isDisabled={loading}
+        isDisabled={isFetchingLocation || isGeocoding}
       >
         {isGeocoding ? (
           <ActivityIndicator color={colors.text} />
@@ -906,7 +918,7 @@ const SignUpScreen = () => {
                   </Button>
                   {step < 3 ? (
                     <Button
-                      className={`h-[55px] rounded-[14px] items-center ${"w-[120px]"} active:opacity-70`}
+                      className="h-[55px] rounded-[14px] items-center w-[120px] active:opacity-70"
                       style={actionButtonShadow}
                       isDisabled={loading || isGeocoding}
                       onPress={handleNextStep}

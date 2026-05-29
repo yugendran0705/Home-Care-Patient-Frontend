@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Link, router, useFocusEffect } from "expo-router";
+import { Link, router } from "expo-router";
 import {
   CalendarDays,
   Edit,
@@ -16,7 +16,7 @@ import {
   Phone,
   Venus,
 } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -92,13 +92,14 @@ const ProfileScreen = () => {
     }
   }, [fadeAnim]);
 
-  useFocusEffect(
-    useCallback(() => {
+  useEffect(() => {
+    const loadData = async () => {
       setLoading(true);
-      fetchData();
+      await fetchData();
       setLoading(false);
-    }, [fetchData]),
-  );
+    };
+    loadData();
+  }, [fetchData]);
 
   const handleLogout = () => {
     Alert.alert("Confirm Logout", "Are you sure you want to logout?", [

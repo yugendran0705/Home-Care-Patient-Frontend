@@ -167,7 +167,10 @@ const AddressFormScreen = () => {
             }
             router.back();
           } catch (error: any) {
-            Alert.alert("Error", error.response.data.detail);
+            Alert.alert(
+              "Error",
+              error?.response?.data?.detail ?? "Could not save address.",
+            );
           } finally {
             setLoading(false);
           }
@@ -194,7 +197,10 @@ const AddressFormScreen = () => {
               Alert.alert("Success", "Address deleted successfully.");
               router.back();
             } catch (error: any) {
-              Alert.alert("Error", error.response.data.detail);
+              Alert.alert(
+                "Error",
+                error?.response?.data?.detail ?? "Could not delete address.",
+              );
             } finally {
               setLoading(false);
             }
@@ -489,7 +495,7 @@ const AddressFormScreen = () => {
               onPress={handleDelete}
               style={{ backgroundColor: colors.error }}
             >
-              <Icon as={Trash} />
+              <Icon as={Trash} color={colors.text} />
             </Button>
           )}
         </HStack>
