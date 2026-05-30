@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Link, router } from "expo-router";
+import { Link, router, useFocusEffect } from "expo-router";
 import {
   CalendarDays,
   Edit,
@@ -16,7 +16,7 @@ import {
   Phone,
   Venus,
 } from "lucide-react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -63,13 +63,14 @@ interface ProfileData {
 const ProfileScreen = () => {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const isFirstMount = useRef(true);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const fadeAnim = useState(new Animated.Value(0))[0];
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const fetchData = useCallback(async () => {
     try {
@@ -79,12 +80,23 @@ const ProfileScreen = () => {
         axiosInstance.get("/addresses/me"),
       ]);
       setProfile(profileResponse.data);
+      setAddresses([...addressResponse.data].reverse());
+
+      // Save to AsyncStorage
+      await AsyncStorage.setItem(
+        "profile",
+        JSON.stringify(profileResponse.data),
+      );
+      await AsyncStorage.setItem(
+        "addresses",
+        JSON.stringify([...addressResponse.data].reverse()),
+      );
+
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
         useNativeDriver: true,
       }).start();
-      setAddresses([...addressResponse.data].reverse());
       setError("");
     } catch (e: any) {
       setError("Failed to fetch data. Please try again.");
@@ -92,14 +104,47 @@ const ProfileScreen = () => {
     }
   }, [fadeAnim]);
 
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await fetchData();
-      setLoading(false);
-    };
-    loadData();
-  }, [fetchData]);
+  const loadFromAsyncStorage = useCallback(async () => {
+    try {
+      const profileData = await AsyncStorage.getItem("profile");
+      const addressesData = await AsyncStorage.getItem("addresses");
+
+      if (profileData) {
+        setProfile(JSON.parse(profileData));
+      }
+      if (addressesData) {
+        setAddresses(JSON.parse(addressesData));
+      }
+
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+      setError("");
+    } catch (e: any) {
+      console.error("Failed to load from AsyncStorage:", e);
+      setError("Failed to load data.");
+    }
+  }, [fadeAnim]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        setLoading(true);
+        if (isFirstMount.current) {
+          // First mount: fetch from API
+          await fetchData();
+          isFirstMount.current = false;
+        } else {
+          // Subsequent mounts: load from AsyncStorage
+          await loadFromAsyncStorage();
+        }
+        setLoading(false);
+      };
+      loadData();
+    }, [fetchData, loadFromAsyncStorage]),
+  );
 
   const handleLogout = () => {
     Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
@@ -307,6 +352,9 @@ const ProfileScreen = () => {
                         >
                           {addr.address_line_1
                             ? `${addr.address_line_1},\n`
+                            : ""}
+                          {addr.address_line_2
+                            ? `${addr.address_line_2},\n`
                             : ""}
                           {addr.city},{"\n"}
                           {addr.state},{"\n"}

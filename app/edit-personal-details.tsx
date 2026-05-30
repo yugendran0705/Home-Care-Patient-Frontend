@@ -31,6 +31,7 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Colors } from "@/constants/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ArrowLeft, Mars, Venus } from "lucide-react-native";
 
 interface PersonalDetails {
@@ -46,6 +47,9 @@ const EditPersonalDetailsScreen = () => {
   const colors = Colors[colorScheme];
 
   const [details, setDetails] = useState<PersonalDetails | null>(null);
+  const [initialDetails, setInitialDetails] = useState<PersonalDetails | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const fadeAnim = useState(new Animated.Value(0))[0];
@@ -57,15 +61,21 @@ const EditPersonalDetailsScreen = () => {
   useEffect(() => {
     const fetchCurrentDetails = async () => {
       try {
-        const response = await axiosInstance.get("/patients/me");
+        // const response = await axiosInstance.get("/patients/me");
+        const response = await AsyncStorage.getItem("profile");
+        if (!response) {
+          throw new Error("Profile data not found");
+        }
+        const data = JSON.parse(response);
         const fetchedDetails = {
-          first_name: response.data.first_name,
-          last_name: response.data.last_name,
-          phone_number: response.data.phone_number,
-          date_of_birth: response.data.date_of_birth,
-          gender: response.data.gender,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          phone_number: data.phone_number,
+          date_of_birth: data.date_of_birth,
+          gender: data.gender,
         };
         setDetails(fetchedDetails);
+        setInitialDetails(fetchedDetails);
 
         if (fetchedDetails.date_of_birth) {
           setDate(new Date(fetchedDetails.date_of_birth));
@@ -124,7 +134,16 @@ const EditPersonalDetailsScreen = () => {
           onPress: async () => {
             setLoading(true);
             try {
+              if (details === initialDetails) {
+                router.back();
+                return;
+              }
               await axiosInstance.put("/patients/me", details);
+              const response = await axiosInstance.get("/patients/me");
+              await AsyncStorage.setItem(
+                "profile",
+                JSON.stringify(response.data),
+              );
               Alert.alert("Success", "Your details have been updated.");
               router.back();
             } catch (error: any) {

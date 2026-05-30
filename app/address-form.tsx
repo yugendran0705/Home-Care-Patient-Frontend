@@ -16,6 +16,7 @@ import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, MapPin, Trash } from "lucide-react-native";
@@ -58,6 +59,7 @@ const AddressFormScreen = () => {
   const [error, setError] = useState("");
 
   const [address, setAddress] = useState(initialAddressState);
+  const [initialAddress, setIniitalAddress] = useState(initialAddressState);
   const [loading, setLoading] = useState(true);
   const [isGeocoding, setIsGeocoding] = useState(false);
 
@@ -72,6 +74,7 @@ const AddressFormScreen = () => {
             `/addresses/one/${addressId}`,
           );
           setAddress(response.data);
+          setIniitalAddress(response.data);
         } catch {
           Alert.alert("Error", "Could not fetch address details.");
           router.back();
@@ -159,12 +162,21 @@ const AddressFormScreen = () => {
           setLoading(true);
           try {
             if (isEditMode) {
+              if (address === initialAddress) {
+                router.back();
+                return;
+              }
               await axiosInstance.put(`/addresses/${addressId}`, address);
               Alert.alert("Success", "Address updated successfully.");
             } else {
               await axiosInstance.post("/addresses", address);
               Alert.alert("Success", "New address added.");
             }
+            const response = await axiosInstance.get("/addresses/me");
+            await AsyncStorage.setItem(
+              "addresses",
+              JSON.stringify(response.data),
+            );
             router.back();
           } catch (error: any) {
             Alert.alert(
@@ -194,6 +206,11 @@ const AddressFormScreen = () => {
             setLoading(true);
             try {
               await axiosInstance.delete(`/addresses/${addressId}`);
+              const response = await axiosInstance.get("/addresses/me");
+              await AsyncStorage.setItem(
+                "addresses",
+                JSON.stringify(response.data),
+              );
               Alert.alert("Success", "Address deleted successfully.");
               router.back();
             } catch (error: any) {
