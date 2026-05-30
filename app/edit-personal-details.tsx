@@ -61,12 +61,10 @@ const EditPersonalDetailsScreen = () => {
   useEffect(() => {
     const fetchCurrentDetails = async () => {
       try {
-        // const response = await axiosInstance.get("/patients/me");
-        const response = await AsyncStorage.getItem("profile");
-        if (!response) {
-          throw new Error("Profile data not found");
-        }
-        const data = JSON.parse(response);
+        const cachedProfile = await AsyncStorage.getItem("profile");
+        const data = cachedProfile
+          ? JSON.parse(cachedProfile)
+          : (await axiosInstance.get("/patients/me")).data;
         const fetchedDetails = {
           first_name: data.first_name,
           last_name: data.last_name,
@@ -134,7 +132,7 @@ const EditPersonalDetailsScreen = () => {
           onPress: async () => {
             setLoading(true);
             try {
-              if (details === initialDetails) {
+              if (JSON.stringify(details) === JSON.stringify(initialDetails)) {
                 router.back();
                 return;
               }

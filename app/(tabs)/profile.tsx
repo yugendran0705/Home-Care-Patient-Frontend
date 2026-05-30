@@ -158,6 +158,8 @@ const ProfileScreen = () => {
         onPress: async () => {
           await AsyncStorage.removeItem("access_token");
           await AsyncStorage.removeItem("refresh_token");
+          await AsyncStorage.removeItem("profile");
+          await AsyncStorage.removeItem("addresses");
           router.replace("/sign-in");
         },
       },

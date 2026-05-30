@@ -59,7 +59,7 @@ const AddressFormScreen = () => {
   const [error, setError] = useState("");
 
   const [address, setAddress] = useState(initialAddressState);
-  const [initialAddress, setIniitalAddress] = useState(initialAddressState);
+  const [initialAddress, setInitalAddress] = useState(initialAddressState);
   const [loading, setLoading] = useState(true);
   const [isGeocoding, setIsGeocoding] = useState(false);
 
@@ -74,7 +74,7 @@ const AddressFormScreen = () => {
             `/addresses/one/${addressId}`,
           );
           setAddress(response.data);
-          setIniitalAddress(response.data);
+          setInitalAddress(response.data);
         } catch {
           Alert.alert("Error", "Could not fetch address details.");
           router.back();
@@ -162,7 +162,7 @@ const AddressFormScreen = () => {
           setLoading(true);
           try {
             if (isEditMode) {
-              if (address === initialAddress) {
+              if (JSON.stringify(address) === JSON.stringify(initialAddress)) {
                 router.back();
                 return;
               }
@@ -175,7 +175,7 @@ const AddressFormScreen = () => {
             const response = await axiosInstance.get("/addresses/me");
             await AsyncStorage.setItem(
               "addresses",
-              JSON.stringify(response.data),
+              JSON.stringify([...response.data].reverse()),
             );
             router.back();
           } catch (error: any) {
@@ -209,7 +209,7 @@ const AddressFormScreen = () => {
               const response = await axiosInstance.get("/addresses/me");
               await AsyncStorage.setItem(
                 "addresses",
-                JSON.stringify(response.data),
+                JSON.stringify([...response.data].reverse()),
               );
               Alert.alert("Success", "Address deleted successfully.");
               router.back();

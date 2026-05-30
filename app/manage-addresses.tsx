@@ -41,11 +41,13 @@ const ManageAddressesScreen = () => {
   const loadFromAsyncStorage = useCallback(async () => {
     try {
       const response = await AsyncStorage.getItem("addresses");
-      if (!response) {
-        throw new Error("Address data not found");
+      if (response) {
+        const data = JSON.parse(response);
+        setAddresses([...data].reverse());
+      } else {
+        const response = await axiosInstance.get("/addresses/me");
+        setAddresses([...response.data].reverse());
       }
-      const data = JSON.parse(response);
-      setAddresses([...data].reverse());
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
