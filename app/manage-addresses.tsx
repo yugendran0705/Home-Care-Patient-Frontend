@@ -5,6 +5,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft, Plus } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
@@ -37,10 +38,32 @@ const ManageAddressesScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
-  const loadData = useCallback(async () => {
+  const loadFromAsyncStorage = useCallback(async () => {
+    try {
+      const response = await AsyncStorage.getItem("addresses");
+      if (response) {
+        const data = JSON.parse(response);
+        setAddresses([...data].reverse());
+      } else {
+        const response = await axiosInstance.get("/addresses/me");
+        setAddresses([...response.data].reverse());
+      }
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    } catch (e) {
+      Alert.alert("Error", "Failed to fetch addresses.");
+      console.error(e);
+    }
+  }, [fadeAnim]);
+
+  const fetchData = useCallback(async () => {
     try {
       const response = await axiosInstance.get("/addresses/me");
       setAddresses([...response.data].reverse());
+      await AsyncStorage.setItem("addresses", JSON.stringify(response.data));
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
@@ -56,11 +79,11 @@ const ManageAddressesScreen = () => {
     useCallback(() => {
       const initialLoad = async () => {
         setLoading(true);
-        await loadData();
+        await loadFromAsyncStorage();
         setLoading(false);
       };
       initialLoad();
-    }, [loadData]),
+    }, [loadFromAsyncStorage]),
   );
 
   const handleSetPrimary = async (addressId: string) => {
@@ -78,7 +101,7 @@ const ManageAddressesScreen = () => {
             try {
               await axiosInstance.patch(`/addresses/set_primary/${addressId}`);
               Alert.alert("Success", "Primary address updated.");
-              await loadData();
+              await fetchData();
             } catch (error: any) {
               Alert.alert(
                 "Error",
@@ -96,9 +119,9 @@ const ManageAddressesScreen = () => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadData();
+    await fetchData();
     setRefreshing(false);
-  }, [loadData]);
+  }, [fetchData]);
 
   if (loading) {
     return (
