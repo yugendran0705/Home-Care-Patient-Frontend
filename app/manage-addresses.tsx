@@ -47,6 +47,10 @@ const ManageAddressesScreen = () => {
       } else {
         const response = await axiosInstance.get("/addresses/me");
         setAddresses([...response.data].reverse());
+        await AsyncStorage.setItem(
+          "addresses",
+          JSON.stringify([...response.data].reverse()),
+        );
       }
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -63,7 +67,10 @@ const ManageAddressesScreen = () => {
     try {
       const response = await axiosInstance.get("/addresses/me");
       setAddresses([...response.data].reverse());
-      await AsyncStorage.setItem("addresses", JSON.stringify(response.data));
+      await AsyncStorage.setItem(
+        "addresses",
+        JSON.stringify([...response.data].reverse()),
+      );
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
@@ -163,7 +170,11 @@ const ManageAddressesScreen = () => {
             {addresses.map((addr) => (
               <VStack
                 key={addr.id}
-                style={{ backgroundColor: colors.secondaryBackground }}
+                style={{
+                  backgroundColor: colors.secondaryBackground,
+                  borderWidth: addr.is_primary ? 2 : 0,
+                  borderColor: "#FBBF24",
+                }}
                 className="rounded-[14px] p-[20px] mb-[20px] relative"
               >
                 <Box>
@@ -181,20 +192,22 @@ const ManageAddressesScreen = () => {
                   </Text>
                 </Box>
 
-                {addr.is_primary && (
-                  <Box className="absolute top-[15px] right-[15px] bg-[#4CAF50] rounded-[10px] px-[8px] py-[4px]">
-                    <Text
-                      style={{ fontFamily: "Sen-Bold", color: colors.text }}
-                      className=" text-[12px]"
-                    >
-                      Primary
-                    </Text>
-                  </Box>
-                )}
-
                 <Divider className="bg-gray-300 my-2" />
 
                 <Box className="flex-row justify-end pt-[15px]">
+                  {addr.is_primary && (
+                    <Box
+                      style={{ backgroundColor: "#FBBF24" }}
+                      className=" absolute bottom-3 left-0 rounded-xl px-2 py-1"
+                    >
+                      <Text
+                        style={{ fontFamily: "Sen-Bold", color: colors.text }}
+                        className="text-xs"
+                      >
+                        Primary
+                      </Text>
+                    </Box>
+                  )}
                   {!addr.is_primary && (
                     <Button
                       className="px-[15px] py-[8px] ml-[10px] rounded-[8px] active:opacity-70"
