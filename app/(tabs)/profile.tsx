@@ -80,7 +80,7 @@ const ProfileScreen = () => {
         axiosInstance.get("/addresses/me"),
       ]);
       setProfile(profileResponse.data);
-      setAddresses([...addressResponse.data].reverse());
+      setAddresses(addressResponse.data);
 
       // Save to AsyncStorage
       await AsyncStorage.setItem(
@@ -89,7 +89,7 @@ const ProfileScreen = () => {
       );
       await AsyncStorage.setItem(
         "addresses",
-        JSON.stringify([...addressResponse.data].reverse()),
+        JSON.stringify(addressResponse.data),
       );
 
       Animated.timing(fadeAnim, {
@@ -369,7 +369,7 @@ const ProfileScreen = () => {
                           <Text
                             style={{
                               fontFamily: "Sen-Bold",
-                              color: colors.text,
+                              color: colors.textPrimary,
                             }}
                             className=" text-[10px]"
                           >

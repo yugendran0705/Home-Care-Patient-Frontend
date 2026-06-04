@@ -28,6 +28,7 @@ export const Colors = {
     // Text
     text: "#ffffff",
     textSecondary: "rgba(255, 255, 255, 0.7)",
+    textPrimary: "#111827",
     textInverted: "#F7FAFC", // Dark text on light elements
     textMutedInverted: "rgba(255, 255, 255, 0.7)",
 
@@ -66,6 +67,7 @@ export const Colors = {
     // Text
     text: "#ffffff",
     textSecondary: "rgba(255, 255, 255, 0.7)",
+    textPrimary: "#111827",
     textInverted: "#F7FAFC", // Dark text on light elements
     textMutedInverted: "rgba(255, 255, 255, 0.7)",
 

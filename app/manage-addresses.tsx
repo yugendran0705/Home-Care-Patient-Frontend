@@ -43,14 +43,11 @@ const ManageAddressesScreen = () => {
       const response = await AsyncStorage.getItem("addresses");
       if (response) {
         const data = JSON.parse(response);
-        setAddresses([...data].reverse());
+        setAddresses(data);
       } else {
         const response = await axiosInstance.get("/addresses/me");
-        setAddresses([...response.data].reverse());
-        await AsyncStorage.setItem(
-          "addresses",
-          JSON.stringify([...response.data].reverse()),
-        );
+        setAddresses(response.data);
+        await AsyncStorage.setItem("addresses", JSON.stringify(response.data));
       }
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -66,11 +63,8 @@ const ManageAddressesScreen = () => {
   const fetchData = useCallback(async () => {
     try {
       const response = await axiosInstance.get("/addresses/me");
-      setAddresses([...response.data].reverse());
-      await AsyncStorage.setItem(
-        "addresses",
-        JSON.stringify([...response.data].reverse()),
-      );
+      setAddresses(response.data);
+      await AsyncStorage.setItem("addresses", JSON.stringify(response.data));
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
@@ -201,7 +195,10 @@ const ManageAddressesScreen = () => {
                       className=" absolute bottom-3 left-0 rounded-xl px-2 py-1"
                     >
                       <Text
-                        style={{ fontFamily: "Sen-Bold", color: colors.text }}
+                        style={{
+                          fontFamily: "Sen-Bold",
+                          color: colors.textPrimary,
+                        }}
                         className="text-xs"
                       >
                         Primary
