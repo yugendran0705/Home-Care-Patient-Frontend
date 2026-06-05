@@ -80,7 +80,7 @@ const ProfileScreen = () => {
         axiosInstance.get("/addresses/me"),
       ]);
       setProfile(profileResponse.data);
-      setAddresses([...addressResponse.data].reverse());
+      setAddresses(addressResponse.data);
 
       // Save to AsyncStorage
       await AsyncStorage.setItem(
@@ -89,7 +89,7 @@ const ProfileScreen = () => {
       );
       await AsyncStorage.setItem(
         "addresses",
-        JSON.stringify([...addressResponse.data].reverse()),
+        JSON.stringify(addressResponse.data),
       );
 
       Animated.timing(fadeAnim, {
@@ -331,19 +331,17 @@ const ProfileScreen = () => {
                   contentContainerStyle={{ gap: 12 }}
                   nestedScrollEnabled
                 >
-                  {addresses.map((addr) => (
+                  {addresses?.map((address) => (
                     <Box
-                      key={addr.id}
+                      key={address.id}
                       className="flex-row items-start gap-4 p-2 rounded-lg"
                       style={{
                         backgroundColor: colors.secondaryBackgroundGradient,
+                        borderWidth: address.is_primary ? 2 : 0,
+                        borderColor: "#FBBF24",
                       }}
                     >
-                      <Icon
-                        as={LocationEdit}
-                        style={{ color: colors.text }}
-                        className=" mt-1"
-                      />
+                      <Icon as={LocationEdit} style={{ color: colors.text }} />
                       <Box className="flex-1 flex-row items-start justify-between">
                         <Text
                           style={{
@@ -352,30 +350,33 @@ const ProfileScreen = () => {
                           }}
                           className="text-lg"
                         >
-                          {addr.address_line_1
-                            ? `${addr.address_line_1},\n`
+                          {address.address_line_1
+                            ? `${address.address_line_1},\n`
                             : ""}
-                          {addr.address_line_2
-                            ? `${addr.address_line_2},\n`
+                          {address.address_line_2
+                            ? `${address.address_line_2},\n`
                             : ""}
-                          {addr.city},{"\n"}
-                          {addr.state},{"\n"}
-                          {addr.pincode}.
+                          {address.city},{"\n"}
+                          {address.state},{"\n"}
+                          {address.pincode}.
                         </Text>
-                        {addr.is_primary && (
-                          <Box
-                            style={{ backgroundColor: colors.success }}
-                            className="rounded-[10px] px-2 py-1"
-                          >
-                            <Text
-                              style={{ fontFamily: "Sen-Bold" }}
-                              className="text-white text-[10px]"
-                            >
-                              Primary
-                            </Text>
-                          </Box>
-                        )}
                       </Box>
+                      {address.is_primary && (
+                        <Box
+                          style={{ backgroundColor: "#FBBF24" }}
+                          className="rounded-[10px] px-2 py-1"
+                        >
+                          <Text
+                            style={{
+                              fontFamily: "Sen-Bold",
+                              color: colors.textPrimary,
+                            }}
+                            className=" text-[10px]"
+                          >
+                            Primary
+                          </Text>
+                        </Box>
+                      )}
                     </Box>
                   ))}
                 </ScrollView>

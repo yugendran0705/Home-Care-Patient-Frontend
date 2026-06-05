@@ -10,10 +10,10 @@ export const Colors = {
     tint: tintColorDark,
 
     // Backgrounds
-    background: "#5A189A",
+    background: "#023E7D",
     // Card
-    secondaryBackground: "#9D4EDD",
-    secondaryBackgroundGradient: "#b374e6",
+    secondaryBackground: "#0466C8",
+    secondaryBackgroundGradient: "#70a6dd",
 
     // Semantics
     error: "#e26767",
@@ -28,6 +28,7 @@ export const Colors = {
     // Text
     text: "#ffffff",
     textSecondary: "rgba(255, 255, 255, 0.7)",
+    textPrimary: "#111827",
     textInverted: "#F7FAFC", // Dark text on light elements
     textMutedInverted: "rgba(255, 255, 255, 0.7)",
 
@@ -48,10 +49,10 @@ export const Colors = {
     tint: tintColorDark,
 
     // Backgrounds
-    background: "#5A189A",
+    background: "#023E7D",
     // Card
-    secondaryBackground: "#9D4EDD",
-    secondaryBackgroundGradient: "#b374e6",
+    secondaryBackground: "#0466C8",
+    secondaryBackgroundGradient: "#70a6dd",
 
     // Semantics
     error: "#e26767",
@@ -66,6 +67,7 @@ export const Colors = {
     // Text
     text: "#ffffff",
     textSecondary: "rgba(255, 255, 255, 0.7)",
+    textPrimary: "#111827",
     textInverted: "#F7FAFC", // Dark text on light elements
     textMutedInverted: "rgba(255, 255, 255, 0.7)",
 

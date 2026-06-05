@@ -175,7 +175,7 @@ const AddressFormScreen = () => {
             const response = await axiosInstance.get("/addresses/me");
             await AsyncStorage.setItem(
               "addresses",
-              JSON.stringify([...response.data].reverse()),
+              JSON.stringify(response.data),
             );
             router.back();
           } catch (error: any) {
@@ -209,7 +209,7 @@ const AddressFormScreen = () => {
               const response = await axiosInstance.get("/addresses/me");
               await AsyncStorage.setItem(
                 "addresses",
-                JSON.stringify([...response.data].reverse()),
+                JSON.stringify(response.data),
               );
               Alert.alert("Success", "Address deleted successfully.");
               router.back();
