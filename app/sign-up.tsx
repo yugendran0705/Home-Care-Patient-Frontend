@@ -20,6 +20,7 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
+import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import {
@@ -29,7 +30,6 @@ import {
 } from "@/components/ui/form-control";
 import { EyeIcon, EyeOffIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
 import { Colors } from "@/constants/Colors";
 import { ArrowLeft, ArrowRight, Mars, Venus } from "lucide-react-native";
 import Animated, {
@@ -293,12 +293,13 @@ const SignUpScreen = () => {
 
   const renderStepOne = () => (
     <>
-      <Text
-        style={{ fontFamily: "Sen-Bold", color: colors.text }}
-        className="text-2xl font-semibold  mb-5 text-center"
+      <ThemedText
+        type="heading"
+        style={{ color: colors.text }}
+        className="mb-5 text-center"
       >
         Step 1: Personal Details
-      </Text>
+      </ThemedText>
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
@@ -471,12 +472,13 @@ const SignUpScreen = () => {
       </FormControl>
 
       <Pressable onPress={() => setShowDatePicker(true)}>
-        <Text
-          style={{ fontFamily: "Sen-Regular", color: colors.text }}
-          className="text-md uppercase font-Sen-Regular mb-2"
+        <ThemedText
+          type="default"
+          style={{ color: colors.text }}
+          className="uppercase mb-2"
         >
           Date of birth
-        </Text>
+        </ThemedText>
         <Box
           style={{
             elevation: 5,
@@ -488,12 +490,9 @@ const SignUpScreen = () => {
           }}
           className="h-16 rounded-[14px] px-[15px] mb-[15px] mt-1 justify-center"
         >
-          <Text
-            style={{ fontFamily: "Sen-Regular", color: colors.text }}
-            className="text-md"
-          >
+          <ThemedText type="default" style={{ color: colors.text }}>
             {formData.date_of_birth || "Select date of birth"}
-          </Text>
+          </ThemedText>
         </Box>
       </Pressable>
       {showDatePicker && (
@@ -505,12 +504,13 @@ const SignUpScreen = () => {
           maximumDate={new Date()}
         />
       )}
-      <Text
-        style={{ fontFamily: "Sen-Regular", color: colors.text }}
-        className="text-md uppercase font-Sen-Regular mb-2"
+      <ThemedText
+        type="default"
+        style={{ color: colors.text }}
+        className="uppercase mb-2"
       >
         Gender
-      </Text>
+      </ThemedText>
       <Box className="flex-row justify-between gap-4 mb-[15px]">
         {["Male", "Female"].map((g) => {
           const isActive = formData.gender === g;
@@ -519,12 +519,13 @@ const SignUpScreen = () => {
             <Button
               key={g}
               onPress={() => handleFormChange("gender", g)}
-              className={`h-16 flex-1 rounded-xl flex-row items-center justify-center bg-transparent border border-white/50`}
+              className="h-16 flex-1 rounded-xl flex-row items-center justify-center bg-transparent border"
               variant="solid"
               style={{
                 backgroundColor: !isActive
                   ? colors.background
                   : colors.secondaryBackground,
+                borderColor: `${colors.text}33`,
               }}
             >
               <ButtonIcon
@@ -548,12 +549,13 @@ const SignUpScreen = () => {
 
   const renderStepThree = () => (
     <>
-      <Text
-        style={{ fontFamily: "Sen-Bold", color: colors.text }}
-        className="text-2xl font-semibold mb-5 text-center"
+      <ThemedText
+        type="heading"
+        style={{ color: colors.text }}
+        className="mb-5 text-center"
       >
         Step 3: Address
-      </Text>
+      </ThemedText>
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
@@ -752,12 +754,13 @@ const SignUpScreen = () => {
 
   const renderStepTwo = () => (
     <Box className="flex-1 min-h-[500px]">
-      <Text
-        style={{ fontFamily: "Sen-Bold", color: colors.text }}
-        className="text-2xl font-semibold mb-5 text-center"
+      <ThemedText
+        type="heading"
+        style={{ color: colors.text }}
+        className="mb-5 text-center"
       >
         Step 2: Pin Your Location
-      </Text>
+      </ThemedText>
       <Box
         style={{
           elevation: 5,
@@ -829,12 +832,12 @@ const SignUpScreen = () => {
         {isGeocoding ? (
           <ActivityIndicator color={colors.text} />
         ) : (
-          <Text
-            style={{ fontFamily: "Sen-Bold", color: colors.text }}
-            className="text-[18px]"
+          <ThemedText
+            type="defaultBold"
+            style={{ color: colors.text, fontSize: 18 }}
           >
             Confirm Location
-          </Text>
+          </ThemedText>
         )}
       </Button>
     </Box>
@@ -870,12 +873,13 @@ const SignUpScreen = () => {
               <View
                 className={`flex-row items-center justify-center mb-5 relative min-h-[50px] ${Platform.OS === "android" ? "mt-5" : "mt-0"}`}
               >
-                <Text
-                  className="text-[28px] text-center"
-                  style={{ fontFamily: "Sen-Bold", color: "#fff" }}
+                <ThemedText
+                  type="title"
+                  className="text-center"
+                  style={{ color: colors.text, fontSize: 36 }}
                 >
                   Create Account
-                </Text>
+                </ThemedText>
               </View>
 
               {step === 1 && renderStepOne()}
@@ -884,12 +888,13 @@ const SignUpScreen = () => {
 
               {error ? (
                 <Box className="bg-white/70 rounded-2xl border border-white/20">
-                  <Text
-                    style={{ fontFamily: "Sen-Regular", color: colors.error }}
-                    className="text-red-500 text-center my-[10px] text-[14px]"
+                  <ThemedText
+                    type="small"
+                    style={{ color: colors.error }}
+                    className="text-red-500 text-center my-[10px]"
                   >
                     {error}
-                  </Text>
+                  </ThemedText>
                 </Box>
               ) : null}
 

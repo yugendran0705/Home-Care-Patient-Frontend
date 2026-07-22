@@ -1,3 +1,4 @@
+import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import {
   Button,
@@ -13,7 +14,6 @@ import {
 import { HStack } from "@/components/ui/hstack";
 import { Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -456,12 +456,13 @@ const AddressFormScreen = () => {
 
       {error ? (
         <Box className="bg-white/10 rounded-lg border border-white/20 p-2 mb-4">
-          <Text
-            style={{ fontFamily: "Sen-Regular", color: colors.error }}
-            className="text-center text-[14px]"
+          <ThemedText
+            type="small"
+            className="text-center"
+            style={{ color: colors.error }}
           >
             {error}
-          </Text>
+          </ThemedText>
         </Box>
       ) : null}
 
@@ -469,8 +470,9 @@ const AddressFormScreen = () => {
         {isEditMode && (
           <Button
             onPress={() => setStep(1)}
-            className="py-3 bg-white/20 rounded-xl h-fit"
+            className="py-3 rounded-xl h-fit"
             isDisabled={loading}
+            style={{ backgroundColor: colors.secondaryBackgroundGradient }}
           >
             <ButtonIcon
               as={MapPin}
@@ -479,7 +481,7 @@ const AddressFormScreen = () => {
             />
             <ButtonText
               style={{ fontFamily: "Sen-Bold", color: colors.text }}
-              className="text-base "
+              className="text-base"
             >
               Change address
             </ButtonText>
@@ -533,18 +535,15 @@ const AddressFormScreen = () => {
             }
             className="ml-2"
           >
-            <Icon as={ArrowLeft} size="xl" />
+            <Icon color={colors.text} as={ArrowLeft} size="xl" />
           </Pressable>
-          <Text
-            className="text-2xl font-semibold"
-            style={{ fontFamily: "Sen-Bold", color: colors.text }}
-          >
+          <ThemedText type="heading" style={{ color: colors.text }}>
             {step === 1
               ? "Set Location"
               : isEditMode
                 ? "Edit Address"
                 : "Confirm Address"}
-          </Text>
+          </ThemedText>
         </Box>
         <Animated.View
           className="flex-1"

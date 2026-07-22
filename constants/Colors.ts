@@ -20,6 +20,8 @@ export const Colors = {
     success: "#4CD964",
     warning: "#FF9500",
 
+    gold: "#FFC83D",
+
     // not used
     // Surfaces (Inputs, Cards)
     surface: "#2A2A2A", // Dark mode cards/badges
@@ -43,40 +45,41 @@ export const Colors = {
 
   dark: {
     // Primary & Accent
-    primary: tintColorDark,
-    primaryBackground: tintColorDark,
-    accent: tintColorLight,
-    tint: tintColorDark,
+    primary: "#7C6FF0", // hero gradient start / icon tint / "View All" links
+    primaryBackground: "#5B4FE0", // hero gradient end / "Book Now" button
+    accent: "#F5A623", // star ratings, highlight badges
+    tint: "#7C6FF0",
 
     // Backgrounds
-    background: "#023E7D",
+    background: "#FFFFFF",
     // Card
-    secondaryBackground: "#0466C8",
-    secondaryBackgroundGradient: "#70a6dd",
+    secondaryBackground: "#F7F6FB", // nurse card / search bar / icon buttons
+    secondaryBackgroundGradient: "#EDE9FE", // service icon circle bg (light purple)
 
     // Semantics
-    error: "#e26767",
+    error: "#f06c6c",
     success: "#4CD964",
     warning: "#FF9500",
 
+    gold: "#F5A623",
     // not used
     // Surfaces (Inputs, Cards)
-    surface: "#2A2A2A", // Dark mode cards/badges
-    surfaceSecondary: "#1A1A1A", // Darker surface
+    surface: "#F7F6FB", // light card surface, matches nurse card bg
+    surfaceSecondary: "#EDE9FE", // secondary light surface (icon chips)
 
     // Text
-    text: "#ffffff",
-    textSecondary: "rgba(255, 255, 255, 0.7)",
+    text: "#111111",
+    textSecondary: "rgba(17, 17, 17, 0.6)",
     textPrimary: "#111827",
-    textInverted: "#F7FAFC", // Dark text on light elements
-    textMutedInverted: "rgba(255, 255, 255, 0.7)",
+    textInverted: "#FFFFFF", // text on purple/dark elements (Book Now button, hero copy)
+    textMutedInverted: "rgba(255, 255, 255, 0.75)",
 
     // Icons
-    icon: "rgba(255, 255, 255, 0.7)",
-    tabIconSelected: tintColorDark,
+    icon: "#7C6FF0",
+    tabIconSelected: "#7C6FF0",
 
-    cursorColor: "#ffffff",
+    cursorColor: "#7C6FF0",
 
-    inputBackground: "#F0F5FA",
+    inputBackground: "#F7F6FB",
   },
 };

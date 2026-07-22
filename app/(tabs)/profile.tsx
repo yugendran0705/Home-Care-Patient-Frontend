@@ -1,9 +1,9 @@
 import axiosInstance from "@/axiosInstance";
+import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
-import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router, useFocusEffect } from "expo-router";
@@ -186,16 +186,20 @@ const ProfileScreen = () => {
         className="flex-1 justify-center items-center"
         style={{ backgroundColor: colors.background }}
       >
-        <Text
-          className="text-center text-[16px] mb-[20px]"
-          style={{ color: colors.text }}
+        <ThemedText
+          type="default"
+          className="text-center mb-xl"
+          style={{ color: colors.text, fontSize: 18 }}
         >
           {error}
-        </Text>
+        </ThemedText>
         <Pressable onPress={() => router.replace("/sign-in")}>
-          <Text className="text-[16px] medium" style={{ color: colors.text }}>
+          <ThemedText
+            type="default"
+            style={{ color: colors.text, fontSize: 18 }}
+          >
             Go to Sign In
-          </Text>
+          </ThemedText>
         </Pressable>
       </Box>
     );
@@ -220,44 +224,48 @@ const ProfileScreen = () => {
         >
           <Animated.View style={{ opacity: fadeAnim }}>
             <Box className="items-center mb-[30px]">
-              <Box className="w-[100px] h-[100px] rounded-full bg-white/20 justify-center items-center mb-[15px] border-[3px] border-white">
-                <Text
-                  style={{ fontFamily: "Sen-Bold" }}
-                  className="text-white text-[40px]"
+              <Box
+                style={{
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.secondaryBackground,
+                }}
+                className="w-[100px] h-[100px] rounded-full justify-center items-center mb-[15px] border-[3px]"
+              >
+                <ThemedText
+                  type="title"
+                  style={{ color: colors.textSecondary, fontSize: 48 }}
                 >
                   {profile.first_name.charAt(0)}
                   {profile.last_name.charAt(0)}
-                </Text>
+                </ThemedText>
               </Box>
-              <Text
-                style={{ fontFamily: "Sen-Bold", color: colors.text }}
-                className="text-[26px] "
+              <ThemedText
+                type="title"
+                style={{ color: colors.text, fontSize: 30 }}
               >
                 {profile.first_name} {profile.last_name}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: "Sen-Regular",
-                  color: colors.textMutedInverted,
-                }}
-                className="text-[16px] text-white/80 mt-[4px]"
+              </ThemedText>
+              <ThemedText
+                type="default"
+                className="mt-2"
+                style={{ color: colors.textSecondary, fontSize: 18 }}
               >
                 {profile.user.email}
-              </Text>
+              </ThemedText>
             </Box>
 
             <VStack
               space="lg"
               style={{ backgroundColor: colors.secondaryBackground }}
-              className="rounded-[12px] p-6 mb-4"
+              className="rounded-xl p-6 mb-4"
             >
               <Box className="flex-row justify-between items-center mb-1">
-                <Text
-                  style={{ fontFamily: "Sen-Bold", color: colors.text }}
-                  className="text-[18px]"
+                <ThemedText
+                  type="subtitle"
+                  style={{ color: colors.text, fontSize: 18 }}
                 >
                   Personal Details
-                </Text>
+                </ThemedText>
                 <Link href="/edit-personal-details" asChild>
                   <Pressable>
                     <Icon as={Edit} style={{ color: colors.text }} size="lg" />
@@ -267,19 +275,19 @@ const ProfileScreen = () => {
               <Divider style={{ backgroundColor: colors.text }} />
               <Box className="flex-row items-center gap-4">
                 <Icon as={Phone} style={{ color: colors.text }} />
-                <Text
-                  style={{ fontFamily: "Sen-Regular", color: colors.text }}
-                  className="text-lg"
+                <ThemedText
+                  type="small"
+                  style={{ color: colors.text, fontSize: 18 }}
                 >
                   {profile.phone_number}
-                </Text>
+                </ThemedText>
               </Box>
 
               <Box className="flex-row items-center gap-4">
                 <Icon as={CalendarDays} style={{ color: colors.text }} />
-                <Text
-                  style={{ fontFamily: "Sen-Regular", color: colors.text }}
-                  className="text-lg"
+                <ThemedText
+                  type="small"
+                  style={{ color: colors.text, fontSize: 18 }}
                 >
                   {profile.date_of_birth
                     ? (() => {
@@ -289,7 +297,7 @@ const ProfileScreen = () => {
                           : dob.toLocaleDateString();
                       })()
                     : "Not provided"}{" "}
-                </Text>
+                </ThemedText>
               </Box>
 
               <Box className="flex-row items-center gap-4">
@@ -297,12 +305,12 @@ const ProfileScreen = () => {
                   as={profile.gender === "Male" ? Mars : Venus}
                   style={{ color: colors.text }}
                 />
-                <Text
-                  style={{ fontFamily: "Sen-Regular", color: colors.text }}
-                  className="text-lg"
+                <ThemedText
+                  type="small"
+                  style={{ color: colors.text, fontSize: 18 }}
                 >
                   {profile.gender}
-                </Text>
+                </ThemedText>
               </Box>
             </VStack>
 
@@ -312,12 +320,12 @@ const ProfileScreen = () => {
               className="rounded-[12px] p-6 mb-4"
             >
               <Box className="flex-row justify-between items-center mb-1">
-                <Text
-                  style={{ fontFamily: "Sen-Bold", color: colors.text }}
-                  className="text-[18px]"
+                <ThemedText
+                  type="subtitle"
+                  style={{ color: colors.text, fontSize: 18 }}
                 >
                   My Addresses
-                </Text>
+                </ThemedText>
                 <Link href="/manage-addresses" asChild>
                   <Pressable>
                     <Icon as={Edit} style={{ color: colors.text }} size="lg" />
@@ -338,17 +346,14 @@ const ProfileScreen = () => {
                       style={{
                         backgroundColor: colors.secondaryBackgroundGradient,
                         borderWidth: address.is_primary ? 2 : 0,
-                        borderColor: "#FBBF24",
+                        borderColor: colors.primaryBackground,
                       }}
                     >
                       <Icon as={LocationEdit} style={{ color: colors.text }} />
                       <Box className="flex-1 flex-row items-start justify-between">
-                        <Text
-                          style={{
-                            fontFamily: "Sen-Regular",
-                            color: colors.text,
-                          }}
-                          className="text-lg"
+                        <ThemedText
+                          type="small"
+                          style={{ color: colors.text, fontSize: 18 }}
                         >
                           {address.address_line_1
                             ? `${address.address_line_1},\n`
@@ -359,22 +364,19 @@ const ProfileScreen = () => {
                           {address.city},{"\n"}
                           {address.state},{"\n"}
                           {address.pincode}.
-                        </Text>
+                        </ThemedText>
                       </Box>
                       {address.is_primary && (
                         <Box
                           style={{ backgroundColor: "#FBBF24" }}
                           className="rounded-[10px] px-2 py-1"
                         >
-                          <Text
-                            style={{
-                              fontFamily: "Sen-Bold",
-                              color: colors.textPrimary,
-                            }}
-                            className=" text-[10px]"
+                          <ThemedText
+                            type="captionBold"
+                            style={{ color: colors.textPrimary, fontSize: 10 }}
                           >
                             Primary
-                          </Text>
+                          </ThemedText>
                         </Box>
                       )}
                     </Box>
@@ -384,7 +386,7 @@ const ProfileScreen = () => {
             </VStack>
 
             <Button
-              className="py-4 rounded-xl h-15 mt-6 mb-10 active:opacity-70"
+              className="py-4 rounded-xl h-15 mt-6 mb-6 active:opacity-70"
               onPress={handleLogout}
               style={{ backgroundColor: colors.error }}
             >
@@ -393,12 +395,12 @@ const ProfileScreen = () => {
                 className=" mr-2"
                 style={{ color: colors.text }}
               />
-              <Text
-                style={{ fontFamily: "Sen-Bold", color: colors.text }}
-                className=" text-[18px]"
+              <ThemedText
+                type="subtitle"
+                style={{ color: colors.text, fontSize: 18 }}
               >
                 Log Out
-              </Text>
+              </ThemedText>
             </Button>
           </Animated.View>
         </ScrollView>

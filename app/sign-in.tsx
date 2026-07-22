@@ -1,3 +1,4 @@
+import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonSpinner, ButtonText } from "@/components/ui/button";
 import {
@@ -8,7 +9,6 @@ import {
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "@/components/ui/icon";
 import { Image } from "@/components/ui/image";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -173,9 +173,11 @@ const SignInScreen = () => {
                       resizeMode="contain"
                     />
                   </Box>
-                  <Text
-                    className="text-5xl font-bold text-center"
+                  <ThemedText
+                    type="title"
+                    className="text-center"
                     style={{
+                      fontSize: 48,
                       fontFamily:
                         Platform.OS === "ios"
                           ? "Avenir Next"
@@ -184,13 +186,14 @@ const SignInScreen = () => {
                     }}
                   >
                     HomeCare
-                  </Text>
-                  <Text
-                    style={{ fontFamily: "Sen-Regular", color: colors.text }}
-                    className="text-[18px] mt-[20px] mb-[20px] w-full text-center"
+                  </ThemedText>
+                  <ThemedText
+                    type="default"
+                    style={{ color: colors.text, fontSize: 18 }}
+                    className="mt-[20px] mb-[20px] w-full text-center"
                   >
                     Welcome back, please sign in
-                  </Text>
+                  </ThemedText>
                 </Box>
               </Animated.View>
               {/* Form Section */}
@@ -287,12 +290,13 @@ const SignInScreen = () => {
                     {/* Error Message */}
                     {!!error && (
                       <Box className="w-full min-h-[44px] rounded-xl bg-red-50 px-3 py-2 justify-center mt-2">
-                        <Text
-                          style={{ fontFamily: "Sen-Regular" }}
-                          className="text-red-600 font-Sen text-[13px] leading-5"
+                        <ThemedText
+                          type="caption"
+                          className="text-red-600"
+                          style={{ fontSize: 13, lineHeight: 20 }}
                         >
                           {error}
-                        </Text>
+                        </ThemedText>
                       </Box>
                     )}
 
@@ -320,24 +324,17 @@ const SignInScreen = () => {
                     {/* Sign Up Link */}
                     <Animated.View style={footerAnimatedStyle}>
                       <Box className="flex-row justify-center mt-8">
-                        <Text
-                          style={{
-                            fontFamily: "Sen-Regular",
-                            color: colors.text,
-                          }}
-                        >
+                        <ThemedText type="default" style={{ color: colors.text }}>
                           Don&apos;t have an account?{" "}
-                        </Text>
+                        </ThemedText>
                         <Link href="/sign-up" asChild>
                           <Pressable>
-                            <Text
-                              style={{
-                                fontFamily: "Sen-Bold",
-                                color: colors.text,
-                              }}
+                            <ThemedText
+                              type="defaultBold"
+                              style={{ color: colors.text }}
                             >
                               Sign Up
-                            </Text>
+                            </ThemedText>
                           </Pressable>
                         </Link>
                       </Box>
