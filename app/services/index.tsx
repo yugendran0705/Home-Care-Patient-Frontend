@@ -129,10 +129,7 @@ export default function AllServicesScreen() {
               </ThemedText>
             </Box>
           ) : (
-            <ScrollView
-              contentContainerStyle={{ padding: 24 }}
-              showsVerticalScrollIndicator={false}
-            >
+            <Box style={{ padding: 24 }}>
               <HStack className="flex-wrap justify-start gap-2">
                 {filteredServices.map((service) => {
                   const ServiceIcon = service.icon;
@@ -150,7 +147,7 @@ export default function AllServicesScreen() {
                   );
                 })}
               </HStack>
-            </ScrollView>
+            </Box>
           )}
         </ScrollView>
       </SafeAreaView>

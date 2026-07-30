@@ -173,7 +173,8 @@ export default function AddressSelectorSheet({
               style={{
                 width: 40,
                 height: 5,
-                backgroundColor: colors.textSecondary + "40",
+                backgroundColor: colors.textSecondary,
+                opacity: 0.25,
                 marginBottom: 16,
               }}
             />

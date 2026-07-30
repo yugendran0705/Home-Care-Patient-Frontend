@@ -11,9 +11,9 @@ import {
 } from "lucide-react-native";
 
 // Services have no icon/image field from the API, so icons are cycled by
-// array index. Any screen showing a service must derive its icon from this
-// same array against the same full, unfiltered `services` order so the
-// same service always gets the same icon across screens.
+// array index. Any screen showing services should derive its icon from this
+// same array using the same `services` ordering (as returned by `useServices`)
+// so the same service keeps the same icon across screens.
 export const SERVICE_ICONS = [
   Syringe,
   Bandage,
