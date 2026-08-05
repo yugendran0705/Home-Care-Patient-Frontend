@@ -1,8 +1,9 @@
+import { ThemedText } from "@/components/ThemedText";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 const AuthGate = () => {
   useEffect(() => {
@@ -15,7 +16,7 @@ const AuthGate = () => {
         setTimeout(() => {
           if (accessToken) {
             // If token exists, user is logged in.
-            router.replace("/(tabs)/profile");
+            router.replace("/(tabs)/home");
           } else {
             // If no token, send them to the sign-in screen.
             router.replace("/sign-in");
@@ -39,7 +40,9 @@ const AuthGate = () => {
     >
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={styles.text}>Checking authentication...</Text>
+        <ThemedText type="default" style={{ marginTop: 16, color: "#ffffff" }}>
+          Checking authentication...
+        </ThemedText>
       </View>
     </LinearGradient>
   );
@@ -50,11 +53,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  text: {
-    marginTop: 16,
-    color: "#ffffff",
-    fontSize: 16,
   },
 });
 

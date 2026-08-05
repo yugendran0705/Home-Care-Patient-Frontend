@@ -1,32 +1,32 @@
 import DateTimePicker, {
-    DateTimePickerEvent,
+  DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Platform,
-    Pressable,
-    ScrollView,
-    Text,
-    useColorScheme,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Platform,
+  Pressable,
+  ScrollView,
+  useColorScheme,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import axiosInstance from "../axiosInstance";
 
+import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import {
-    Button,
-    ButtonIcon,
-    ButtonSpinner,
-    ButtonText,
+  Button,
+  ButtonIcon,
+  ButtonSpinner,
+  ButtonText,
 } from "@/components/ui/button";
 import {
-    FormControl,
-    FormControlLabel,
-    FormControlLabelText,
+  FormControl,
+  FormControlLabel,
+  FormControlLabelText,
 } from "@/components/ui/form-control";
 import { Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
@@ -178,12 +178,9 @@ const EditPersonalDetailsScreen = () => {
             <Pressable onPress={() => router.back()} className="ml-2">
               <Icon as={ArrowLeft} size="xl" />
             </Pressable>
-            <Text
-              className="text-2xl"
-              style={{ fontFamily: "Sen-Bold", color: colors.text }}
-            >
+            <ThemedText type="heading" style={{ color: colors.text }}>
               Edit Personal Details
-            </Text>
+            </ThemedText>
           </Box>
           <ScrollView contentContainerStyle={{ padding: 20 }}>
             <FormControl size="lg" className="w-full mb-2">
@@ -283,15 +280,13 @@ const EditPersonalDetailsScreen = () => {
             </FormControl>
             {/* Date of Birth Picker */}
             <Pressable onPress={() => setShowDatePicker(true)}>
-              <Text
-                style={{
-                  fontFamily: "Sen-Regular",
-                  color: colors.textInverted,
-                }}
-                className="text-md uppercase mb-2"
+              <ThemedText
+                type="default"
+                style={{ color: colors.text }}
+                className="uppercase mb-2"
               >
                 Date of birth
-              </Text>
+              </ThemedText>
               <Box
                 style={{
                   elevation: 5,
@@ -303,14 +298,9 @@ const EditPersonalDetailsScreen = () => {
                 }}
                 className="h-16 rounded-[14px] px-[15px] mb-[15px] mt-1 justify-center"
               >
-                <Text
-                  style={{
-                    fontFamily: "Sen-Regular",
-                    color: colors.text,
-                  }}
-                >
+                <ThemedText type="default" style={{ color: colors.text }}>
                   {details.date_of_birth || "Select Date of Birth"}
-                </Text>
+                </ThemedText>
               </Box>
             </Pressable>
             {showDatePicker && (
@@ -323,12 +313,13 @@ const EditPersonalDetailsScreen = () => {
               />
             )}
             {/* Gender Selection */}
-            <Text
-              style={{ fontFamily: "Sen-Regular", color: colors.text }}
-              className="text-md uppercase mb-2"
+            <ThemedText
+              type="default"
+              style={{ color: colors.text }}
+              className="uppercase mb-2"
             >
               Gender
-            </Text>
+            </ThemedText>
             <Box className="flex-row justify-between gap-4 mb-6">
               {["Male", "Female"].map((g) => {
                 const isActive = details.gender === g;
@@ -343,7 +334,7 @@ const EditPersonalDetailsScreen = () => {
                           ? colors.secondaryBackground
                           : "transparent",
                         borderWidth: isActive ? 0 : 1,
-                        borderColor: "rgba(255,255,255,0.2)",
+                        borderColor: `${colors.text}33`,
                       }}
                     >
                       <ButtonIcon
@@ -366,12 +357,13 @@ const EditPersonalDetailsScreen = () => {
               })}
             </Box>
             {error ? (
-              <Text
-                style={{ color: colors.error, fontFamily: "Sen-Regular" }}
+              <ThemedText
+                type="small"
+                style={{ color: colors.error }}
                 className="text-center mb-4 bg-white/10 rounded-lg p-2"
               >
                 {error}
-              </Text>
+              </ThemedText>
             ) : null}
             <Button
               onPress={handleSave}

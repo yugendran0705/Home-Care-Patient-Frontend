@@ -1,8 +1,8 @@
+import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
-import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -141,14 +141,11 @@ const ManageAddressesScreen = () => {
         <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
           <Box className="flex-row gap-4 items-center px-3 mt-5">
             <Pressable onPress={() => router.back()} className="ml-2">
-              <Icon as={ArrowLeft} size="xl" color={colors.textInverted} />
+              <Icon as={ArrowLeft} size="xl" color={colors.text} />
             </Pressable>
-            <Text
-              className="text-2xl font-semibold "
-              style={{ fontFamily: "Sen-Bold", color: colors.textInverted }}
-            >
+            <ThemedText type="heading" style={{ color: colors.text }}>
               Manage Addresses
-            </Text>
+            </ThemedText>
           </Box>
           <ScrollView
             contentContainerStyle={{ padding: 20 }}
@@ -167,23 +164,21 @@ const ManageAddressesScreen = () => {
                 style={{
                   backgroundColor: colors.secondaryBackground,
                   borderWidth: addr.is_primary ? 2 : 0,
-                  borderColor: "#FBBF24",
+                  borderColor: colors.primaryBackground,
                 }}
                 className="rounded-[14px] p-[20px] mb-[20px] relative"
               >
                 <Box>
-                  <Text
-                    style={{ fontFamily: "Sen-Bold", color: colors.text }}
-                    className="text-[16px] mb-[4px]"
+                  <ThemedText
+                    type="defaultBold"
+                    className="mb-[4px]"
+                    style={{ color: colors.text }}
                   >
                     {addr.address_line_1}, {addr.address_line_2}
-                  </Text>
-                  <Text
-                    style={{ fontFamily: "Sen-Regular", color: colors.text }}
-                    className="text-[14px]"
-                  >
+                  </ThemedText>
+                  <ThemedText type="small" style={{ color: colors.text }}>
                     {addr.city}, {addr.pincode}
-                  </Text>
+                  </ThemedText>
                 </Box>
 
                 <Divider className="bg-gray-300 my-2" />
@@ -194,15 +189,12 @@ const ManageAddressesScreen = () => {
                       style={{ backgroundColor: "#FBBF24" }}
                       className=" absolute bottom-3 left-0 rounded-xl px-2 py-1"
                     >
-                      <Text
-                        style={{
-                          fontFamily: "Sen-Bold",
-                          color: colors.textPrimary,
-                        }}
-                        className="text-xs"
+                      <ThemedText
+                        type="captionBold"
+                        style={{ color: colors.textPrimary }}
                       >
                         Primary
-                      </Text>
+                      </ThemedText>
                     </Box>
                   )}
                   {!addr.is_primary && (
