@@ -16,6 +16,7 @@ import { Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import { useAlert } from "@/hooks/useAlert";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
@@ -23,7 +24,6 @@ import { ArrowLeft, MapPin, Trash } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   useColorScheme,
@@ -52,6 +52,7 @@ const initialAddressState = {
 const AddressFormScreen = () => {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const showAlert = useAlert();
 
   const params = useLocalSearchParams();
   const addressId = params.addressId as string | undefined;
@@ -76,7 +77,7 @@ const AddressFormScreen = () => {
           setAddress(response.data);
           setInitalAddress(response.data);
         } catch {
-          Alert.alert("Error", "Could not fetch address details.");
+          showAlert("Error", "Could not fetch address details.");
           router.back();
         } finally {
           setLoading(false);
@@ -85,7 +86,7 @@ const AddressFormScreen = () => {
         // Get current GPS location for the map in "add" mode
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          Alert.alert(
+          showAlert(
             "Permission Denied",
             "Location permission is required to set address location.",
           );
@@ -131,7 +132,7 @@ const AddressFormScreen = () => {
       setStep(2); // Move to the form step
     } catch (error) {
       console.error("Geocoding error:", error);
-      Alert.alert(
+      showAlert(
         "Error",
         "Could not determine address from location. Please enter it manually.",
       );
@@ -152,7 +153,7 @@ const AddressFormScreen = () => {
       setError("Please fill all required fields.");
       return;
     }
-    Alert.alert("Save Address", "Are you sure you want to save this address?", [
+    showAlert("Save Address", "Are you sure you want to save this address?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Save",
@@ -167,10 +168,10 @@ const AddressFormScreen = () => {
                 return;
               }
               await axiosInstance.put(`/addresses/${addressId}`, address);
-              Alert.alert("Success", "Address updated successfully.");
+              showAlert("Success", "Address updated successfully.");
             } else {
               await axiosInstance.post("/addresses", address);
-              Alert.alert("Success", "New address added.");
+              showAlert("Success", "New address added.");
             }
             const response = await axiosInstance.get("/addresses/me");
             await AsyncStorage.setItem(
@@ -179,7 +180,7 @@ const AddressFormScreen = () => {
             );
             router.back();
           } catch (error: any) {
-            Alert.alert(
+            showAlert(
               "Error",
               error?.response?.data?.detail ?? "Could not save address.",
             );
@@ -193,7 +194,7 @@ const AddressFormScreen = () => {
 
   const handleDelete = async () => {
     if (!isEditMode) return;
-    Alert.alert(
+    showAlert(
       "Delete Address",
       "Are you sure you want to delete this address?",
       [
@@ -211,10 +212,10 @@ const AddressFormScreen = () => {
                 "addresses",
                 JSON.stringify(response.data),
               );
-              Alert.alert("Success", "Address deleted successfully.");
+              showAlert("Success", "Address deleted successfully.");
               router.back();
             } catch (error: any) {
-              Alert.alert(
+              showAlert(
                 "Error",
                 error?.response?.data?.detail ?? "Could not delete address.",
               );

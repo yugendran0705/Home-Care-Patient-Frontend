@@ -5,13 +5,14 @@ import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import { PURPLE_DARK } from "@/constants/serviceTheme";
+import { useAlert } from "@/hooks/useAlert";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft, Plus } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Pressable,
   RefreshControl,
@@ -33,6 +34,7 @@ interface Address {
 const ManageAddressesScreen = () => {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const showAlert = useAlert();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -55,7 +57,7 @@ const ManageAddressesScreen = () => {
         useNativeDriver: true,
       }).start();
     } catch (e) {
-      Alert.alert("Error", "Failed to fetch addresses.");
+      showAlert("Error", "Failed to fetch addresses.");
       console.error(e);
     }
   }, [fadeAnim]);
@@ -71,7 +73,7 @@ const ManageAddressesScreen = () => {
         useNativeDriver: true,
       }).start();
     } catch (e) {
-      Alert.alert("Error", "Failed to fetch addresses.");
+      showAlert("Error", "Failed to fetch addresses.");
       console.error(e);
     }
   }, [fadeAnim]);
@@ -88,7 +90,7 @@ const ManageAddressesScreen = () => {
   );
 
   const handleSetPrimary = async (addressId: string) => {
-    Alert.alert(
+    showAlert(
       "Set Primary Address",
       "Are you sure you want to set this address as primary?",
       [
@@ -101,10 +103,10 @@ const ManageAddressesScreen = () => {
             setLoading(true);
             try {
               await axiosInstance.patch(`/addresses/set_primary/${addressId}`);
-              Alert.alert("Success", "Primary address updated.");
+              showAlert("Success", "Primary address updated.");
               await fetchData();
             } catch (error: any) {
-              Alert.alert(
+              showAlert(
                 "Error",
                 error?.response?.data?.detail ??
                   "Failed to update primary address.",
@@ -126,8 +128,11 @@ const ManageAddressesScreen = () => {
 
   if (loading) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={PURPLE_DARK} />
       </Box>
     );
   }

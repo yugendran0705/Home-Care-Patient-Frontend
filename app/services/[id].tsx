@@ -5,6 +5,7 @@ import { Icon } from "@/components/ui/icon";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
 import {
+  formatPrice,
   PURPLE,
   PURPLE_DARK,
   PURPLE_DEEP,
@@ -17,7 +18,6 @@ import { ArrowLeft, ChevronRight, ShieldCheck } from "lucide-react-native";
 import { useCallback } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   useColorScheme,
@@ -153,7 +153,7 @@ export default function ServiceDetailScreen() {
                   type="defaultBold"
                   style={{ color: PURPLE_DEEP, fontSize: 18 }}
                 >
-                  ₹{service.base_price}
+                  ₹{formatPrice(service.base_price)}
                 </ThemedText>
               </HStack>
 
@@ -173,7 +173,7 @@ export default function ServiceDetailScreen() {
 
             {/* Info grid */}
             <HStack
-              className="justify-between rounded-2xl p-4"
+              className="justify-around rounded-2xl p-4"
               style={{ backgroundColor: colors.secondaryBackground }}
             >
               <VStack space="xs" className="items-center flex-1">
@@ -188,30 +188,20 @@ export default function ServiceDetailScreen() {
                   Duration
                 </ThemedText>
               </VStack>
-              <VStack space="xs" className="items-center flex-1">
-                <ThemedText type="smallBold" style={{ color: colors.text }}>
-                  {service.shift_duration_hours} hrs
-                </ThemedText>
-                <ThemedText
-                  type="caption"
-                  className="text-center"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Shift Duration
-                </ThemedText>
-              </VStack>
-              <VStack space="xs" className="items-center flex-1">
-                <ThemedText type="smallBold" style={{ color: colors.text }}>
-                  {service.schedule_type}
-                </ThemedText>
-                <ThemedText
-                  type="caption"
-                  className="text-center"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Schedule Type
-                </ThemedText>
-              </VStack>
+              {service.shift_duration_hours ? (
+                <VStack space="xs" className="items-center flex-1">
+                  <ThemedText type="smallBold" style={{ color: colors.text }}>
+                    {service.shift_duration_hours} hrs
+                  </ThemedText>
+                  <ThemedText
+                    type="caption"
+                    className="text-center"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    Shift Duration
+                  </ThemedText>
+                </VStack>
+              ) : null}
             </HStack>
 
             {/* Description */}
@@ -228,7 +218,12 @@ export default function ServiceDetailScreen() {
 
         <Box className="px-6 pb-4 pt-2">
           <Pressable
-            onPress={() => Alert.alert("Coming Soon", "Booking coming soon")}
+            onPress={() =>
+              router.push({
+                pathname: "/booking/schedule",
+                params: { serviceId: service.id },
+              })
+            }
             className="rounded-full px-5 py-4 flex-row items-center justify-center"
             style={{ backgroundColor: PURPLE_DARK }}
           >

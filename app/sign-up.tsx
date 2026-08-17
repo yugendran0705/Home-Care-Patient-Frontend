@@ -9,7 +9,6 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -31,6 +30,7 @@ import {
 import { EyeIcon, EyeOffIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Colors } from "@/constants/Colors";
+import { useAlert } from "@/hooks/useAlert";
 import { ArrowLeft, ArrowRight, Mars, Venus } from "lucide-react-native";
 import Animated, {
   Easing,
@@ -75,6 +75,7 @@ const SignUpScreen = () => {
 
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const showAlert = useAlert();
 
   const scale = useSharedValue(1);
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
@@ -237,7 +238,7 @@ const SignUpScreen = () => {
         JSON.stringify({ refresh_token }),
       );
 
-      Alert.alert(
+      showAlert(
         "Success!",
         "Your account has been created. Please sign in.",
         [{ text: "OK", onPress: () => router.push("/(tabs)/profile") }],
@@ -281,7 +282,7 @@ const SignUpScreen = () => {
       setStep(3); // Move to the form step
     } catch (e: any) {
       console.warn("Reverse geocoding error: ", e?.response?.data || e.message);
-      Alert.alert(
+      showAlert(
         "Error",
         "Could not determine address from location. Please enter it manually.",
       );

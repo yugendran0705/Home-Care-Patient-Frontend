@@ -5,6 +5,8 @@ import { Button, ButtonIcon } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
 import { VStack } from "@/components/ui/vstack";
+import { PURPLE_DARK } from "@/constants/serviceTheme";
+import { useAlert } from "@/hooks/useAlert";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router, useFocusEffect } from "expo-router";
 import {
@@ -19,7 +21,6 @@ import {
 import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Pressable,
   RefreshControl,
@@ -63,6 +64,7 @@ interface ProfileData {
 const ProfileScreen = () => {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const showAlert = useAlert();
   const isFirstMount = useRef(true);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -147,7 +149,7 @@ const ProfileScreen = () => {
   );
 
   const handleLogout = () => {
-    Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
+    showAlert("Confirm Logout", "Are you sure you want to logout?", [
       {
         text: "Cancel",
         style: "cancel",
@@ -174,8 +176,11 @@ const ProfileScreen = () => {
 
   if (loading) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={PURPLE_DARK} />
       </Box>
     );
   }
@@ -239,16 +244,13 @@ const ProfileScreen = () => {
                   {profile.last_name.charAt(0)}
                 </ThemedText>
               </Box>
-              <ThemedText
-                type="title"
-                style={{ color: colors.text, fontSize: 30 }}
-              >
+              <ThemedText type="heading" style={{ color: colors.text }}>
                 {profile.first_name} {profile.last_name}
               </ThemedText>
               <ThemedText
-                type="default"
-                className="mt-2"
-                style={{ color: colors.textSecondary, fontSize: 18 }}
+                type="small"
+                className="mt-1"
+                style={{ color: colors.textSecondary }}
               >
                 {profile.user.email}
               </ThemedText>
@@ -275,20 +277,14 @@ const ProfileScreen = () => {
               <Divider style={{ backgroundColor: colors.text }} />
               <Box className="flex-row items-center gap-4">
                 <Icon as={Phone} style={{ color: colors.text }} />
-                <ThemedText
-                  type="small"
-                  style={{ color: colors.text, fontSize: 18 }}
-                >
+                <ThemedText type="default" style={{ color: colors.text }}>
                   {profile.phone_number}
                 </ThemedText>
               </Box>
 
               <Box className="flex-row items-center gap-4">
                 <Icon as={CalendarDays} style={{ color: colors.text }} />
-                <ThemedText
-                  type="small"
-                  style={{ color: colors.text, fontSize: 18 }}
-                >
+                <ThemedText type="default" style={{ color: colors.text }}>
                   {profile.date_of_birth
                     ? (() => {
                         const dob = new Date(profile.date_of_birth);
@@ -305,10 +301,7 @@ const ProfileScreen = () => {
                   as={profile.gender === "Male" ? Mars : Venus}
                   style={{ color: colors.text }}
                 />
-                <ThemedText
-                  type="small"
-                  style={{ color: colors.text, fontSize: 18 }}
-                >
+                <ThemedText type="default" style={{ color: colors.text }}>
                   {profile.gender}
                 </ThemedText>
               </Box>
@@ -351,10 +344,7 @@ const ProfileScreen = () => {
                     >
                       <Icon as={LocationEdit} style={{ color: colors.text }} />
                       <Box className="flex-1 flex-row items-start justify-between">
-                        <ThemedText
-                          type="small"
-                          style={{ color: colors.text, fontSize: 18 }}
-                        >
+                        <ThemedText type="default" style={{ color: colors.text }}>
                           {address.address_line_1
                             ? `${address.address_line_1},\n`
                             : ""}
@@ -373,7 +363,7 @@ const ProfileScreen = () => {
                         >
                           <ThemedText
                             type="captionBold"
-                            style={{ color: colors.textPrimary, fontSize: 10 }}
+                            style={{ color: colors.textPrimary }}
                           >
                             Primary
                           </ThemedText>

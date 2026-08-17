@@ -2,8 +2,13 @@ import { HStack } from "@/components/ui/hstack";
 import { CloseIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { PURPLE_DARK } from "@/constants/serviceTheme";
-import { Mic, SearchIcon } from "lucide-react-native";
-import React from "react";
+import { useAlert } from "@/hooks/useAlert";
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
+import { Mic, SearchIcon, Square } from "lucide-react-native";
+import React, { useState } from "react";
 import { Pressable } from "react-native";
 
 interface ServiceSearchBarProps {
@@ -23,6 +28,47 @@ const ServiceSearchBar: React.FC<ServiceSearchBarProps> = ({
   colors,
   placeholder = "Search for nursing services...",
 }) => {
+  const showAlert = useAlert();
+  const [isListening, setIsListening] = useState(false);
+
+  useSpeechRecognitionEvent("start", () => setIsListening(true));
+  useSpeechRecognitionEvent("end", () => setIsListening(false));
+  useSpeechRecognitionEvent("result", (event) => {
+    const transcript = event.results[0]?.transcript;
+    if (transcript && event.isFinal) {
+      onChangeText(transcript);
+    }
+  });
+  useSpeechRecognitionEvent("error", (event) => {
+    setIsListening(false);
+    if (event.error === "not-allowed") {
+      showAlert(
+        "Microphone Access Needed",
+        "Please allow microphone and speech recognition access to search by voice.",
+      );
+    }
+  });
+
+  const handleMicPress = async () => {
+    if (isListening) {
+      ExpoSpeechRecognitionModule.stop();
+      return;
+    }
+    const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!result.granted) {
+      showAlert(
+        "Microphone Access Needed",
+        "Please allow microphone and speech recognition access to search by voice.",
+      );
+      return;
+    }
+    ExpoSpeechRecognitionModule.start({
+      lang: "en-US",
+      interimResults: true,
+      continuous: false,
+    });
+  };
+
   return (
     <HStack space="sm" className="items-center">
       <Input
@@ -39,7 +85,7 @@ const ServiceSearchBar: React.FC<ServiceSearchBarProps> = ({
             color: colors.text,
           }}
           className="text-md"
-          placeholder={placeholder}
+          placeholder={isListening ? "Listening..." : placeholder}
           placeholderTextColor={colors.textSecondary}
           cursorColor={colors.textSecondary}
           value={value}
@@ -54,9 +100,14 @@ const ServiceSearchBar: React.FC<ServiceSearchBarProps> = ({
 
       <Pressable
         className="p-4 rounded-xl items-center justify-center"
-        style={{ backgroundColor: PURPLE_DARK }}
+        style={{ backgroundColor: isListening ? "#E8483C" : PURPLE_DARK }}
+        onPress={handleMicPress}
       >
-        <Mic size={20} color="#fff" />
+        {isListening ? (
+          <Square size={20} color="#fff" fill="#fff" />
+        ) : (
+          <Mic size={20} color="#fff" />
+        )}
       </Pressable>
     </HStack>
   );

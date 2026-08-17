@@ -3,7 +3,6 @@ import AddressSelectorSheet, {
   Address,
 } from "@/components/AddressSelectorSheet";
 import ServiceCard from "@/components/ServiceCard";
-import ServiceSearchBar from "@/components/ServiceSearchBar";
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
@@ -14,8 +13,10 @@ import {
   PURPLE_DARK,
   PURPLE_DEEP,
   PURPLE_SOFT,
+  formatPrice,
   iconForIndex,
 } from "@/constants/serviceTheme";
+import { useAlert } from "@/hooks/useAlert";
 import { useServices } from "@/hooks/useServices";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
@@ -37,7 +38,6 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Image,
   ImageBackground,
@@ -116,6 +116,7 @@ const primaryOf = (list: Address[]) =>
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const showAlert = useAlert();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const isFirstMount = useRef(true);
@@ -127,7 +128,6 @@ export default function HomeScreen() {
   } = useServices();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [showEmergencyBanner, setShowEmergencyBanner] = useState(true);
 
   // Address selection
@@ -214,9 +214,9 @@ export default function HomeScreen() {
         setSelectedAddress({ ...address, is_primary: true });
         await AsyncStorage.setItem("addresses", JSON.stringify(updated));
 
-        Alert.alert("Success", "Primary address updated.");
+        showAlert("Success", "Primary address updated.");
       } catch (error: any) {
-        Alert.alert(
+        showAlert(
           "Error",
           error?.response?.data?.detail ?? "Failed to update primary address.",
         );
@@ -234,7 +234,7 @@ export default function HomeScreen() {
         return;
       }
 
-      Alert.alert(
+      showAlert(
         "Set Primary Address",
         "Are you sure you want to set this address as primary?",
         [
@@ -265,17 +265,14 @@ export default function HomeScreen() {
     return [];
   }, [services]);
 
-  const filteredServices = useMemo(() => {
-    if (!search.trim()) return serviceItems;
-    return serviceItems.filter((s) =>
-      s.label.toLowerCase().includes(search.trim().toLowerCase()),
-    );
-  }, [serviceItems, search]);
 
   if (loading) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={PURPLE_DARK} />
       </Box>
     );
   }
@@ -383,12 +380,6 @@ export default function HomeScreen() {
                   Hello, {profile.first_name} 👋
                 </ThemedText>
               ) : null}
-              {/* Search bar */}
-              <ServiceSearchBar
-                value={search}
-                onChangeText={setSearch}
-                colors={colors}
-              />
               {/* Hero banner */}
               <Box
                 className="rounded-3xl overflow-hidden"
@@ -527,14 +518,20 @@ export default function HomeScreen() {
               <HStack className="items-center justify-between">
                 <ThemedText
                   type="subtitle"
+                  numberOfLines={1}
                   style={{
                     color: colors.text,
                     fontSize: 18,
+                    flex: 1,
+                    marginRight: 8,
                   }}
                 >
-                  Healthcare Services at Home
+                  Healthcare Services
                 </ThemedText>
-                <Pressable onPress={() => router.push("/services")}>
+                <Pressable
+                  onPress={() => router.push("/services")}
+                  style={{ flexShrink: 0 }}
+                >
                   <HStack space="xs" className="items-center">
                     <ThemedText
                       type="caption"
@@ -547,7 +544,7 @@ export default function HomeScreen() {
                 </Pressable>
               </HStack>
               <HStack className="flex-wrap justify-start gap-2">
-                {filteredServices.slice(0, 9).map((service) => {
+                {serviceItems.slice(0, 6).map((service) => {
                   const Icon = service.icon;
                   return (
                     <ServiceCard
@@ -582,7 +579,12 @@ export default function HomeScreen() {
                       <ThemedText
                         type="caption"
                         className="text-center"
-                        style={{ color: colors.textSecondary, lineHeight: 13 }}
+                        numberOfLines={2}
+                        style={{
+                          color: colors.textSecondary,
+                          fontSize: 11,
+                          lineHeight: 14,
+                        }}
                       >
                         {point.label}
                       </ThemedText>
@@ -594,12 +596,19 @@ export default function HomeScreen() {
               <HStack className="items-center justify-between">
                 <ThemedText
                   type="subtitle"
-                  style={{ color: colors.text, fontSize: 18 }}
+                  numberOfLines={1}
+                  style={{
+                    color: colors.text,
+                    fontSize: 18,
+                    flex: 1,
+                    marginRight: 8,
+                  }}
                 >
                   Top Rated Nurses
                 </ThemedText>
                 <Pressable
-                // onPress={() => router.push("/nurses")}
+                  style={{ flexShrink: 0 }}
+                  // onPress={() => router.push("/nurses")}
                 >
                   <HStack space="xs" className="items-center">
                     <ThemedText
@@ -656,7 +665,7 @@ export default function HomeScreen() {
                         type="smallBold"
                         style={{ color: colors.text }}
                       >
-                        ₹{nurse.hourly_rate}/hr
+                        ₹{formatPrice(nurse.hourly_rate)}/hr
                       </ThemedText>
                     </HStack>
                   </Pressable>
