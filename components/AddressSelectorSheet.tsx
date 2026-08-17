@@ -3,14 +3,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
-import {
-  Check,
-  ChevronRight,
-  Home,
-  MapPin,
-  Plus,
-  X,
-} from "lucide-react-native";
+import { ChevronRight, Home, MapPin, Plus, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -263,7 +256,7 @@ export default function AddressSelectorSheet({
                               <HStack space="sm" className="items-center">
                                 <ThemedText
                                   type="defaultBold"
-                                  style={{ color: colors.text }}
+                                  style={{ color: colors.text, flexShrink: 1 }}
                                   numberOfLines={1}
                                 >
                                   {address.address_line_1}
@@ -271,7 +264,10 @@ export default function AddressSelectorSheet({
                                 {address.is_primary && (
                                   <Box
                                     className="rounded-full px-2 py-0.5"
-                                    style={{ backgroundColor: PURPLE_SOFT }}
+                                    style={{
+                                      backgroundColor: PURPLE_SOFT,
+                                      flexShrink: 0,
+                                    }}
                                   >
                                     <ThemedText
                                       type="caption"
@@ -294,15 +290,6 @@ export default function AddressSelectorSheet({
                                 {secondaryLine(address)}
                               </ThemedText>
                             </VStack>
-
-                            {selected && (
-                              <Box
-                                className="w-6 h-6 rounded-full items-center justify-center"
-                                style={{ backgroundColor: PURPLE }}
-                              >
-                                <Check size={14} color="#fff" />
-                              </Box>
-                            )}
                           </HStack>
                         </Pressable>
                       );

@@ -1,4 +1,4 @@
-package com.yugendran_s.HomeCarePatientFrontend
+package com.yugendran_s.HomeCarePatient
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

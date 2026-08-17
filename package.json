@@ -12,6 +12,7 @@
     "install": ""
   },
   "dependencies": {
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo/html-elements": "^0.10.1",
     "@expo/vector-icons": "^15.0.3",
     "@gluestack-ui/core": "^3.0.12",
@@ -36,6 +37,7 @@
     "expo-location": "~19.0.8",
     "expo-router": "~6.0.23",
     "expo-secure-store": "~15.0.8",
+    "expo-speech-recognition": "^56.0.1",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-symbols": "~1.0.8",

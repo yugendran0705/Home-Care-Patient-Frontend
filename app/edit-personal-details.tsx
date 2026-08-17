@@ -5,7 +5,6 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Platform,
   Pressable,
@@ -31,6 +30,8 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Colors } from "@/constants/Colors";
+import { PURPLE_DARK } from "@/constants/serviceTheme";
+import { useAlert } from "@/hooks/useAlert";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ArrowLeft, Mars, Venus } from "lucide-react-native";
 
@@ -45,6 +46,7 @@ interface PersonalDetails {
 const EditPersonalDetailsScreen = () => {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const showAlert = useAlert();
 
   const [details, setDetails] = useState<PersonalDetails | null>(null);
   const [initialDetails, setInitialDetails] = useState<PersonalDetails | null>(
@@ -84,7 +86,7 @@ const EditPersonalDetailsScreen = () => {
           useNativeDriver: true,
         }).start();
       } catch (e: any) {
-        Alert.alert(
+        showAlert(
           "Error",
           e?.response?.data?.detail ?? "Could not fetch your details.",
         );
@@ -120,7 +122,7 @@ const EditPersonalDetailsScreen = () => {
       setError("Please fill in all fields.");
       return;
     }
-    Alert.alert(
+    showAlert(
       "Update Personal Details",
       "Are you sure you want to save this?",
       [
@@ -142,10 +144,10 @@ const EditPersonalDetailsScreen = () => {
                 "profile",
                 JSON.stringify(response.data),
               );
-              Alert.alert("Success", "Your details have been updated.");
+              showAlert("Success", "Your details have been updated.");
               router.back();
             } catch (error: any) {
-              Alert.alert(
+              showAlert(
                 "Error",
                 error?.response?.data?.detail ??
                   "Could not update your details.",
@@ -161,8 +163,11 @@ const EditPersonalDetailsScreen = () => {
 
   if (loading || !details) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color={colors.text} />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={PURPLE_DARK} />
       </Box>
     );
   }
