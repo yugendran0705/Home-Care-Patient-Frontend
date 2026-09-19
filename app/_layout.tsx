@@ -59,6 +59,10 @@ export default function RootLayout() {
             <Stack.Screen name="services" options={{ headerShown: false }} />
             <Stack.Screen name="bookings" options={{ headerShown: false }} />
             <Stack.Screen name="booking" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="notifications"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </AlertProvider>
       </ThemeProvider>

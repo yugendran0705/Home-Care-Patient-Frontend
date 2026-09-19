@@ -19,6 +19,18 @@ export interface Payment {
   updated_at: string;
 }
 
+// booking_status ENUM (models.Booking): Pending, Confirmed, Completed, Cancelled, Rejected
+// payment_status ENUM (models.Booking): Pending, Paid, Refunded, Failed
+export interface Review {
+  id: string;
+  booking_id: string;
+  patient_id: string;
+  nurse_id: string;
+  rating: number;
+  comment: string | null;
+  review_date: string;
+}
+
 export interface Booking {
   id: string;
   parent_booking_id: string | null;
@@ -54,6 +66,7 @@ export interface Booking {
     pincode: string;
   };
   payment: Payment | null;
+  review: Review | null;
 }
 
 const BOOKINGS_CACHE_KEY = "bookings";
@@ -63,8 +76,10 @@ export function useBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  // `silent` refetches in place without flipping `loading`, so a screen that's
+  // already showing data doesn't flash back to a spinner (e.g. after a review).
+  const fetchData = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
     setError("");
     try {
       const response = await axiosInstance.get("/bookings/me");

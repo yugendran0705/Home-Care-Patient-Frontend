@@ -20,6 +20,7 @@ import { useAlert } from "@/hooks/useAlert";
 import { useServices } from "@/hooks/useServices";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
+import { useUnreadNotificationCount } from "@/hooks/useNotifications";
 import { router, useFocusEffect } from "expo-router";
 import {
   Bell,
@@ -127,6 +128,8 @@ export default function HomeScreen() {
     loadFromAsyncStorage: loadServicesFromAsyncStorage,
   } = useServices();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const { count: unreadCount, refresh: refreshUnreadCount } =
+    useUnreadNotificationCount();
   const [loading, setLoading] = useState(true);
   const [showEmergencyBanner, setShowEmergencyBanner] = useState(true);
 
@@ -191,14 +194,17 @@ export default function HomeScreen() {
         setLoading(false);
       };
       loadData();
-    }, [fetchData, loadFromAsyncStorage, loadAddresses]),
+      // Refetched on every focus so returning from the notifications screen
+      // reflects anything just marked read.
+      refreshUnreadCount();
+    }, [fetchData, loadFromAsyncStorage, loadAddresses, refreshUnreadCount]),
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchData();
+    await Promise.all([fetchData(), refreshUnreadCount()]);
     setRefreshing(false);
-  }, [fetchData]);
+  }, [fetchData, refreshUnreadCount]);
 
   const applyPrimary = useCallback(
     async (address: Address) => {
@@ -358,14 +364,40 @@ export default function HomeScreen() {
                 </Pressable>
 
                 <Pressable
+                  onPress={() => router.push("/notifications")}
                   className="w-10 h-10 rounded-full items-center justify-center"
                   style={{ backgroundColor: colors.secondaryBackground }}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    unreadCount > 0
+                      ? `Notifications, ${unreadCount} unread`
+                      : "Notifications"
+                  }
                 >
                   <Bell size={18} color={colors.text} />
-                  <Box
-                    className="w-2.5 h-2.5 rounded-full absolute"
-                    style={{ backgroundColor: EMERGENCY_RED, top: 8, right: 8 }}
-                  />
+                  {unreadCount > 0 ? (
+                    <Box
+                      className="rounded-full absolute items-center justify-center"
+                      style={{
+                        backgroundColor: EMERGENCY_RED,
+                        top: -2,
+                        right: -2,
+                        minWidth: 18,
+                        height: 18,
+                        paddingHorizontal: 4,
+                        borderWidth: 2,
+                        borderColor: colors.background,
+                      }}
+                    >
+                      <ThemedText
+                        type="captionBold"
+                        maxFontSizeMultiplier={1}
+                        style={{ color: "#FFFFFF", fontSize: 10, lineHeight: 12 }}
+                      >
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </ThemedText>
+                    </Box>
+                  ) : null}
                 </Pressable>
               </HStack>
               {profile?.first_name ? (

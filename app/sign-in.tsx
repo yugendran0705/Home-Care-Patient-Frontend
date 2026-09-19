@@ -32,6 +32,40 @@ import logoImage from "../assets/images/HC_logo.png";
 import data from "../config.js";
 import { Colors } from "../constants/Colors";
 
+// Turns a failed login request into a message the user can act on.
+const getSignInErrorMessage = (e: any): string => {
+  // No response at all: the server was unreachable or the request timed out.
+  if (!e.response) {
+    return "Couldn't reach the server. Check your internet connection and try again.";
+  }
+
+  const { status, data } = e.response;
+
+  // The API answers 404 for an unknown email and 401 for a wrong password.
+  // Both get the same message so the screen doesn't reveal which emails
+  // have accounts.
+  if (status === 401 || status === 404) {
+    return "Incorrect email or password.";
+  }
+  if (status === 422) {
+    const invalidEmail =
+      Array.isArray(data?.detail) &&
+      data.detail.some((d: any) => d?.loc?.includes("email"));
+    return invalidEmail
+      ? "Please enter a valid email address."
+      : "Please check your email and password and try again.";
+  }
+  if (status === 429) {
+    return "Too many sign-in attempts. Please wait a moment and try again.";
+  }
+  if (status >= 500) {
+    return "Something went wrong on our end. Please try again shortly.";
+  }
+  return typeof data?.detail === "string"
+    ? data.detail
+    : "Couldn't sign you in. Please try again.";
+};
+
 const SignInScreen = () => {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
@@ -106,10 +140,11 @@ const SignInScreen = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${data.apiUrl}/users/login`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${data.apiUrl}/users/login`,
+        { email, password },
+        { timeout: 15000 },
+      );
       // Assuming the response body has access_token and refresh_token
       const { access_token, refresh_token } = response.data;
       // Securely store the tokens
@@ -125,13 +160,7 @@ const SignInScreen = () => {
       // Navigate to the main part of the app on success
       router.push("/(tabs)/profile"); // Adjust this path based on your app structure
     } catch (e: any) {
-      // Set a user-friendly error message
-      const errorMessage =
-        (e.response &&
-          e.response.data &&
-          (e.response.data.message || e.response.data.error)) ||
-        "Invalid credentials or network error.";
-      setError(errorMessage);
+      setError(getSignInErrorMessage(e));
     } finally {
       // Ensure loading is always turned off
       setLoading(false);

@@ -9,7 +9,7 @@ import {
   statusPalette,
 } from "@/constants/serviceTheme";
 import type { Booking } from "@/hooks/useBookings";
-import { CalendarDays, CreditCard, User } from "lucide-react-native";
+import { CalendarDays, CreditCard, KeyRound, Star, User } from "lucide-react-native";
 import { Pressable } from "react-native";
 
 interface BookingCardProps {
@@ -40,6 +40,18 @@ export default function BookingCard({
 }: BookingCardProps) {
   const bookingPalette = statusPalette(booking.booking_status);
   const paymentPalette = statusPalette(booking.payment_status);
+  // Only single-visit (Continuous) bookings get a hint here; a Daily_Shift
+  // booking's codes and reviews live on its individual shifts.
+  const isSingleVisit = booking.service.schedule_type !== "Daily_Shift";
+  const hint =
+    !isSingleVisit
+      ? null
+      : booking.booking_status === "Completed" && !booking.review
+        ? { Icon: Star, text: "Rate your visit" }
+        : booking.booking_status === "Confirmed" &&
+            booking.payment_status === "Paid"
+          ? { Icon: KeyRound, text: "Completion code available" }
+          : null;
 
   return (
     <Pressable
@@ -77,6 +89,14 @@ export default function BookingCard({
               {booking.nurse.first_name} {booking.nurse.last_name}
             </ThemedText>
           </HStack>
+          {hint ? (
+            <HStack space="xs" className="items-center">
+              <hint.Icon size={13} color={PURPLE_DEEP} />
+              <ThemedText type="captionBold" style={{ color: PURPLE_DEEP }}>
+                {hint.text}
+              </ThemedText>
+            </HStack>
+          ) : null}
         </VStack>
 
         <Box

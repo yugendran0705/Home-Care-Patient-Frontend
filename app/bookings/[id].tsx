@@ -1,3 +1,7 @@
+import axiosInstance from "@/axiosInstance";
+import CompletionCodeCard from "@/components/CompletionCodeCard";
+import ReviewSection from "@/components/ReviewSection";
+import ShiftCarousel from "@/components/ShiftCarousel";
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
@@ -14,7 +18,7 @@ import {
   statusPalette,
 } from "@/constants/serviceTheme";
 import { useAlert } from "@/hooks/useAlert";
-import { useBookings } from "@/hooks/useBookings";
+import { useBookings, type Booking } from "@/hooks/useBookings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import {
@@ -26,10 +30,11 @@ import {
   ShieldCheck,
   Star,
 } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   useColorScheme,
 } from "react-native";
@@ -56,13 +61,20 @@ const formatTime = (iso: string) => {
   });
 };
 
+// The handover code only exists once the visit is paid for and confirmed
+// (booking_status / payment_status ENUMs in the backend's models.Booking).
+const awaitingCompletion = (b: Booking) =>
+  b.booking_status === "Confirmed" && b.payment_status === "Paid";
+
 export default function BookingDetailScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
   const showAlert = useAlert();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { bookings, loading, fetchData } = useBookings();
+  const { bookings, loading, error, fetchData } = useBookings();
   const [payingNow, setPayingNow] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -71,6 +83,102 @@ export default function BookingDetailScreen() {
   );
 
   const booking = bookings.find((b) => b.id === id);
+
+  // A Daily_Shift booking is a billing wrapper; each shift is its own child
+  // booking with its own completion code and review. A Continuous booking is
+  // a single visit and has no children.
+  const shifts = useMemo(
+    () =>
+      bookings
+        .filter((b) => b.parent_booking_id === id)
+        .sort(
+          (a, b) =>
+            new Date(a.scheduled_start_time).getTime() -
+            new Date(b.scheduled_start_time).getTime(),
+        ),
+    [bookings, id],
+  );
+
+  const refetchSilently = useCallback(
+    () => fetchData({ silent: true }),
+    [fetchData],
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchData({ silent: true });
+    setRefreshing(false);
+  }, [fetchData]);
+
+  // Quote first (same backend policy code as the cancel itself), so the
+  // patient sees exactly what they'll get back before confirming.
+  const handleCancelBooking = async () => {
+    if (!booking) return;
+    const detail = (e: any, fallback: string) =>
+      typeof e?.response?.data?.detail === "string" ? e.response.data.detail : fallback;
+
+    setCancelling(true);
+    let quote: {
+      cancellable: boolean;
+      reason: string | null;
+      visits_to_cancel: number;
+      partial_refund_visits: number;
+      refund_amount: string;
+      policy: string;
+    };
+    try {
+      ({ data: quote } = await axiosInstance.get(`/bookings/${booking.id}/cancellation`));
+    } catch (e: any) {
+      showAlert("Couldn't cancel", detail(e, "Please try again."));
+      return;
+    } finally {
+      setCancelling(false);
+    }
+
+    if (!quote.cancellable) {
+      showAlert("Can't cancel this booking", quote.reason ?? quote.policy);
+      return;
+    }
+
+    const refund = parseFloat(quote.refund_amount);
+    const visits =
+      quote.visits_to_cancel > 1 ? `${quote.visits_to_cancel} upcoming visits` : "this visit";
+    const refundLine =
+      booking.booking_status === "Pending"
+        ? "You haven't paid yet, so nothing will be charged."
+        : refund > 0
+          ? `You'll get ₹${formatPrice(quote.refund_amount)} back` +
+            (quote.partial_refund_visits > 0
+              ? ` (50% for visits within 12 hours).`
+              : " — a full refund.")
+          : "No refund applies under the cancellation policy.";
+
+    showAlert("Cancel booking?", `This cancels ${visits}. ${refundLine}\n\n${quote.policy}`, [
+      { text: "Keep booking", style: "cancel" },
+      {
+        text: "Cancel booking",
+        style: "destructive",
+        onPress: async () => {
+          setCancelling(true);
+          try {
+            await axiosInstance.post(`/bookings/${booking.id}/cancel`);
+            await fetchData({ silent: true });
+            showAlert(
+              "Booking cancelled",
+              refund > 0
+                ? `A refund of ₹${formatPrice(quote.refund_amount)} is on its way (usually 5–7 working days).`
+                : undefined,
+            );
+          } catch (e: any) {
+            showAlert("Couldn't cancel", detail(e, "Please try again."));
+            fetchData({ silent: true });
+          } finally {
+            setCancelling(false);
+          }
+        },
+      },
+    ]);
+  };
 
   const handleCompletePayment = async () => {
     if (!booking?.payment?.gateway_order_id) return;
@@ -158,7 +266,12 @@ export default function BookingDetailScreen() {
               className="text-center mb-xl"
               style={{ color: colors.text, fontSize: 18 }}
             >
-              Booking not found.
+              {/* The hook keeps the last good list on a failed refetch, so reaching
+                  here with an error means we never loaded it - don't claim the
+                  booking doesn't exist. */}
+              {error
+                ? "Couldn't load this booking. Check your connection and try again."
+                : "Booking not found."}
             </ThemedText>
             <Pressable onPress={() => fetchData()}>
               <ThemedText type="defaultBold" style={{ color: PURPLE, fontSize: 18 }}>
@@ -175,6 +288,7 @@ export default function BookingDetailScreen() {
   const paymentPalette = statusPalette(booking.payment_status);
   const nurseInitials = `${booking.nurse.first_name.charAt(0)}${booking.nurse.last_name.charAt(0)}`;
   const rating = parseFloat(booking.nurse.average_rating);
+  const isDailyShift = booking.service.schedule_type === "Daily_Shift";
 
   return (
     <SafeAreaProvider>
@@ -184,6 +298,14 @@ export default function BookingDetailScreen() {
         <ScrollView
           contentContainerStyle={{ padding: 24, paddingBottom: 12 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[PURPLE]}
+              tintColor={PURPLE}
+            />
+          }
         >
           <VStack space="lg">
             {/* Hero */}
@@ -226,6 +348,29 @@ export default function BookingDetailScreen() {
               </ThemedText>
             </VStack>
 
+            {/* Completion code + review for a single-visit (Continuous) booking */}
+            {!isDailyShift && awaitingCompletion(booking) ? (
+              <CompletionCodeCard
+                bookingId={booking.id}
+                colors={colors}
+                onStale={refetchSilently}
+              />
+            ) : null}
+
+            {!isDailyShift && booking.booking_status === "Completed" ? (
+              <VStack space="sm">
+                <ThemedText type="defaultBold" style={{ color: colors.text }}>
+                  {booking.review ? "Your Review" : "Rate Your Visit"}
+                </ThemedText>
+                <ReviewSection
+                  bookingId={booking.id}
+                  review={booking.review}
+                  colors={colors}
+                  onChanged={refetchSilently}
+                />
+              </VStack>
+            ) : null}
+
             {/* Info grid */}
             <HStack
               className="justify-around rounded-2xl p-4"
@@ -253,6 +398,16 @@ export default function BookingDetailScreen() {
                 </VStack>
               ) : null}
             </HStack>
+
+            {/* Shifts of a Daily_Shift booking, each completed/reviewed on its own */}
+            {isDailyShift && shifts.length > 0 ? (
+              <ShiftCarousel
+                shifts={shifts}
+                colors={colors}
+                awaitingCompletion={awaitingCompletion}
+                onChanged={refetchSilently}
+              />
+            ) : null}
 
             {/* Nurse */}
             <VStack space="sm">
@@ -474,6 +629,36 @@ export default function BookingDetailScreen() {
                 ) : null}
               </VStack>
             </VStack>
+
+            {/* Cancel: only the whole booking (root record), while it's still open */}
+            {!booking.parent_booking_id &&
+            (booking.booking_status === "Pending" ||
+              booking.booking_status === "Confirmed") ? (
+              <Pressable
+                onPress={handleCancelBooking}
+                disabled={cancelling}
+                className="rounded-full items-center justify-center"
+                style={{
+                  height: 48,
+                  borderWidth: 1,
+                  borderColor: colors.error,
+                  opacity: cancelling ? 0.6 : 1,
+                }}
+              >
+                {cancelling ? (
+                  <ActivityIndicator color={colors.error} />
+                ) : (
+                  <ThemedText
+                    type="defaultBold"
+                    numberOfLines={1}
+                    maxFontSizeMultiplier={1.3}
+                    style={{ color: colors.error }}
+                  >
+                    Cancel booking
+                  </ThemedText>
+                )}
+              </Pressable>
+            ) : null}
           </VStack>
         </ScrollView>
       </SafeAreaView>
