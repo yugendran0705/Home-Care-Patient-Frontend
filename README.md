@@ -48,6 +48,14 @@ This is a React Native mobile application for patients using the Home Care servi
   npm run web
   ```
 
+### Running tests
+
+```bash
+npm test
+```
+
+Jest (`jest-expo`) with React Native Testing Library. The API client, AsyncStorage and navigation are mocked in `jest.setup.ts`. Tests live next to the code in `__tests__/` folders.
+
 ## Folder Structure
 
 - `app/`: Contains the screens and navigation logic of the application, using Expo Router.

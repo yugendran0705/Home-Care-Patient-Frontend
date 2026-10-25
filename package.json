@@ -3,12 +3,17 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
+    "dev": "npm run lint && expo start --port 8082",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint",
+    "lint": "expo lint .",
+    "lint:fix": "expo lint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "check": "npm run lint && npm run typecheck && npm test",
     "install": ""
   },
   "dependencies": {
@@ -24,6 +29,7 @@
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
+    "@types/jest": "29.5.14",
     "axios": "^1.11.0",
     "expo": "~54.0.33",
     "expo-blur": "~15.0.8",
@@ -43,6 +49,8 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
+    "jest": "~29.7.0",
+    "jest-expo": "~54.0.18",
     "lucide-react-native": "^0.575.0",
     "nativewind": "^4.2.2",
     "react": "19.1.0",
@@ -64,6 +72,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@testing-library/react-native": "^13.3.3",
     "@types/react": "~19.1.10",
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.25.0",
@@ -72,5 +81,19 @@
     "tailwindcss": "^3.4.19",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/android/",
+      "/ios/"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|lucide-react-native|@gluestack-ui/.*|@legendapp/.*|nativewind|react-native-css-interop|react-native-razorpay)"
+    ]
+  }
 }
